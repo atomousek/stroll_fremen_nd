@@ -3,17 +3,10 @@
 
 
 import importlib
-import L98dataset_io as dio
-import L03k_means as km
+import dataset_io as dio
+import k_means as km
 import numpy as np
 import matplotlib.pyplot as plt
-
-
-
-
-
-
-
 
 
 importlib.reload(dio)

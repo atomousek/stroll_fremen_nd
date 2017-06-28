@@ -26,6 +26,3 @@ def nacteni_prikladu(umisteni_souboru="" +
     trenovaci['X_norm'] = 2 * (trenovaci['x'] - x_avg) / (x_max - x_min)
     trenovaci['Y_norm'] = 2 * (trenovaci['y'] - y_avg) / (y_max - y_min)
     return trenovaci.iloc[:, 3:7].values
-
-
-# umisteni_souboru="/home/tom/python/vyuka/numpy/aktivity/activity.txt"
