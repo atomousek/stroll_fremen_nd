@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 def log_sum_exp_over_rows(a):
     # This computes log(sum(exp(a), axis=0)) in a numerically stable way
-    maxs_small = np.reshape(np.amax(a, axis=0),(1,-1), order="F")
+    maxs_small = np.reshape(np.amax(a, axis=0), (1, -1), order="F")
     maxs_big = np.tile(maxs_small, (a.shape[0], 1))
     ret = np.log(np.sum(np.exp(a - maxs_big), axis=0)) + maxs_small
     return ret
@@ -180,8 +180,8 @@ def visualisation(X, C):
     uses: matplotlib.pyplot.*np.c_
     objective: show series of grph devided by the krok
     """
-    plt.scatter(X[:,0], X[:,1], color='red', label='DATASET')
-    plt.scatter(C[:,0], C[:,1], color='blue', label='CENTRA')
+    plt.scatter(X[:, 0], X[:, 1], color='red', label='DATASET')
+    plt.scatter(C[:, 0], C[:, 1], color='blue', label='CENTRA')
     plt.title('shlukova analyza')
     plt.xlabel('x')
     plt.ylabel('y')
