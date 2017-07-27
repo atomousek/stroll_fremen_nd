@@ -5,24 +5,73 @@ import pandas as pd
 import numpy as np
 
 
-def nacteni_prikladu(umisteni_souboru="" +
-                     "/home/tom/projects/atomousek/stroll_fremen_nd/" +
-                     "priklad.txt"):
-    # nactu DataFrame
-    trenovaci = pd.read_csv(umisteni_souboru, sep=' ', header=None,
-                            index_col=None)
-    # pojmenuji sloupce
-    trenovaci.columns = ['cas', 'x', 'y']
-    hodiny = np.float64(trenovaci['cas'] % (60 * 60 * 24)) / (60 * 60)
-    x_min = np.min(trenovaci['x'])
-    x_max = np.max(trenovaci['x'])
+def loading_priklad_01(file_location='' +
+                          '/home/tom/projects/atomousek/stroll_fremen_nd/' +
+                          'priklad.txt', edge=0.05):
+    """
+    input: file_location string, defined as constant
+           edge float, length of the edge of "cell"
+    output: X numpy array nxd, matrix of normalized measures
+            number_of_cubes list, number of cubes on x and y axis
+    uses: pd.read_csv(), np.float64(), np.min(), np.max(), np.cos(), np.sin(),
+          pd.iloc(), pd.values()
+    objective: load file, normalize variables, return number of cubes
+    """
+    # read DataFrame
+    df = pd.read_csv(file_location, sep=' ', header=None, index_col=None)
+    # naming columns
+    df.columns = ['unix_time', 'x', 'y']
+    # variables for normalization
+    hours = np.float64(df['unix_time'] % (60 * 60 * 24)) / (60 * 60)
+    x_min = np.min(df['x'])
+    x_max = np.max(df['x'])
     x_avg = (x_min + x_max) / 2
-    y_min = np.min(trenovaci['y'])
-    y_max = np.max(trenovaci['y'])
+    y_min = np.min(df['y'])
+    y_max = np.max(df['y'])
     y_avg = (y_min + y_max) / 2
+    # number of predefined cubes in the measured space
+    number_of_cubes = [(x_max - x_min) / edge, (y_max - y_min) / edge]
+    # normalized variables
+    df['cosinus_t'] = np.cos(2*np.pi * hours / 24)
+    df['sinus_t'] = np.sin(2*np.pi * hours / 24)
+    df['X_norm'] = 2 * (df['x'] - x_avg) / (x_max - x_min)
+    df['Y_norm'] = 2 * (df['y'] - y_avg) / (y_max - y_min)
+    return df.iloc[:, 3:7].values, np.int64(np.ceil(number_of_cubes))
 
-    trenovaci['cosinus_t'] = np.cos(2*np.pi * hodiny / 24)
-    trenovaci['sinus_t'] = np.sin(2*np.pi * hodiny / 24)
-    trenovaci['X_norm'] = 2 * (trenovaci['x'] - x_avg) / (x_max - x_min)
-    trenovaci['Y_norm'] = 2 * (trenovaci['y'] - y_avg) / (y_max - y_min)
-    return trenovaci.iloc[:, 3:7].values
+
+def loading_priklad_natural(file_location='' +
+                            '/home/tom/projects/atomousek/stroll_fremen_nd/' +
+                            'priklad.txt', min_hours=-1, max_hours=25):
+    """
+    input: file_location string, defined as constant
+           edge float, length of the edge of "cell"
+    output: X numpy array nxd, matrix of normalized measures
+            number_of_cubes list, number of cubes on x and y axis
+    uses: pd.read_csv(), np.float64(), np.min(), np.max(), np.cos(), np.sin(),
+          pd.iloc(), pd.values()
+    objective: load file, naturalize variables, return number of cubes
+    """
+    # read DataFrame
+    df = pd.read_csv(file_location, sep=' ', header=None, index_col=None)
+    # naming columns
+    df.columns = ['unix_time', 'x', 'y']
+    # variables for naturalization
+    df['hours'] = np.float64(df['unix_time'] % (60 * 60 * 24)) / (60 * 60)
+    df = df.loc[(df['hours'] >= min_hours) & (df['hours'] < max_hours), :]
+    # naturalized variables
+    df['cosinus_t'] = (24 / (2*np.pi)) * np.cos(2*np.pi * df['hours'] / 24)
+    df['sinus_t'] = (24 / (2*np.pi)) * np.sin(2*np.pi * df['hours'] / 24)
+    df['X_norm'] = df['x']
+    df['Y_norm'] = df['y']
+    return df.iloc[:, 4:8].values
+
+
+
+
+
+
+
+
+
+
+
