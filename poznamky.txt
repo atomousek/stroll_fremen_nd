@@ -1,0 +1,24 @@
+Tento projekt si klade za cil vytvaret spojity model chovani (prevazne) lidi
+v casoprostoru. Zakladni krok je shlukovka nad vhodne zvolenym casoprostorem.
+ A protoze do prostoru rypat nechceme, rypeme do casu. Protoze existuje
+hypoteza, ze se lide chovasji periodicky, vznika predstava modelu, ktery
+se buduje nad prostorem, ktery tuto periodicitu odrazi.
+
+Kazda periodicita rozsiri prostor o kruznici (podmnozinu plochy), do ktere
+se homogenne zobrazuje prislusna zvolena casova perioda. K tomu se samozrejme
+vaze spousta otazek... 
+
+1) delka kruznice
+
+- pri periode 1 den jsme zvolili delku 24 jednotek odrazejici pocet hodin
+ve dni. Ta uvaha byla ovlivnena pouze tim, ze puvodne mereny prostor byl mereny
+v metrech a delka obou chodeb byla v jednotkach metru. Delky chodeb jsme
+nenormalizovali do prostoru <0; 1>. To predevsim proto, ze pouzivame 
+Gustafson–Kessel Algorithm, a ja mam pocit, ze se mu moc nedari na takto
+znormovanem prostoru.
+Otazkou je, zda evolucne zvolene jednotky jsou to prave orechove, ale pusobi
+to tak, ze by bylo nejlepsi, kdyby velikosti tech dimenzi byly nejak pomeritelne
+
+- zda se mi, ze pokud budeme pridavat dalsi periody, kruznice odvozena
+od periody by mela mit delku odpovidajici nasobku periody mensi (v serazeni 
+od nejkratsi po nejdelsi tedy periody predesle)

@@ -16,7 +16,7 @@ import numpy as np
 def loading_file(data_location='' +
                  '/home/tom/projects/atomousek/stroll_fremen_nd/priklad.txt',
                  min_hours=-1, max_hours=25,
-                 min_x=-8, max_x=12, min_y=-4, max_y=17,
+                 min_x=-8, max_x=13, min_y=-4, max_y=18,
                  expansion=True):
     """
     input: file_location string, predefined
@@ -41,14 +41,16 @@ def loading_file(data_location='' +
         # usualy I need whole day so I add random point at the end and start
         # of a day
         last = df.index.max()
-        random = np.random.random_sample()
-        x = (max_x - min_x) * random + min_x
-        y = (max_y - min_y) * random + min_y
-        df.loc[last + 1] = [0.0, x, y, 0.0]
-        df.loc[last + 2] = [0.0, x, y, 24.0]
-    df = df.loc[(df['hours'] >= min_hours) & (df['hours'] < max_hours) &
-                (df['x'] >= min_x) & (df['x'] < max_x) &
-                (df['y'] >= min_y) & (df['y'] < max_y), :]
+        # random = np.random.random_sample()
+        # x = (max_x - min_x) * random + min_x
+        # y = (max_y - min_y) * random + min_y
+        df.loc[last + 1] = [0.0, max_x, max_y, 0.0]
+        df.loc[last + 2] = [0.0, min_x, min_y, 24.0]
+        df.loc[last + 3] = [0.0, min_x, max_y, 0.0]
+        df.loc[last + 4] = [0.0, max_x, min_y, 24.0]
+    df = df.loc[(df['hours'] >= min_hours) & (df['hours'] <= max_hours) &
+                (df['x'] >= min_x) & (df['x'] <= max_x) &
+                (df['y'] >= min_y) & (df['y'] <= max_y), :]
     return df.iloc[:, 1:4].values
 
 
@@ -125,7 +127,8 @@ def save_coordinates(edge_of_square=0.05, timestep=0.1,
                      'stroll_fremen_nd/priklad.txt',
                      min_hours=-1, max_hours=25,
                      min_x=-8, max_x=12, min_y=-4, max_y=17,
-                     expansion=False
+                     expansion=False,
+                     suffix=''
                      ):
     """
     input:
@@ -139,27 +142,30 @@ def save_coordinates(edge_of_square=0.05, timestep=0.1,
     training_data, central_points = create_grid(X, shape_of_grid)
     positions = coordinates(central_points)
     training_data = training_data.reshape(-1)
-    pd.DataFrame(positions).to_csv(path_or_buf=save_directory + 'COORDINATES',
+    pd.DataFrame(positions).to_csv(path_or_buf=save_directory +
+                                   'COORDINATES' + suffix,
                                    sep=' ', index=False, header=False)
-    pd.DataFrame(shape_of_grid).to_csv(path_or_buf=save_directory + 'SHAPE',
+    pd.DataFrame(shape_of_grid).to_csv(path_or_buf=save_directory +
+                                       'SHAPE' + suffix,
                                        sep=' ', index=False, header=False)
-    pd.DataFrame(training_data).to_csv(path_or_buf=save_directory + 'DATA',
+    pd.DataFrame(training_data).to_csv(path_or_buf=save_directory +
+                                       'DATA' + suffix,
                                        sep=' ', index=False, header=False)
 
 
 def load_coordinates(coordinates_directory='/home/tom/projects/atomousek/' +
-                     'stroll_fremen_nd/output/'):
+                     'stroll_fremen_nd/output/', suffix=''):
     """
     input:
     output:
     uses:
     objective:
     """
-    coordinates = pd.read_csv(coordinates_directory + 'COORDINATES',
+    coordinates = pd.read_csv(coordinates_directory + 'COORDINATES' + suffix,
                               sep=' ', header=None, index_col=None)
-    shape_of_grid = pd.read_csv(coordinates_directory + 'SHAPE',
+    shape_of_grid = pd.read_csv(coordinates_directory + 'SHAPE' + suffix,
                                 sep=' ', header=None, index_col=None)
-    training_data = pd.read_csv(coordinates_directory + 'DATA',
+    training_data = pd.read_csv(coordinates_directory + 'DATA' + suffix,
                                 sep=' ', header=None, index_col=None)
     return coordinates.values, shape_of_grid.values.reshape(-1),\
         training_data.values
