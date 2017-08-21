@@ -23,6 +23,15 @@ to tak, ze by bylo nejlepsi, kdyby velikosti tech dimenzi byly nejak pomeritelne
 od periody by mela mit delku odpovidajici nasobku periody mensi (v serazeni 
 od nejkratsi po nejdelsi tedy periody predesle)
 
+- pak je tu ovsem krajnasova myslenka, ze by delka kruznice mela odrazet vliv
+periody
+
+- a k tomu se vaze finta zvana "metrika na miru", kdy na kazde casove kruznici 
+spocitame vzdalenost jako delku casti kruznice mezi merenimi (cosinova metrika,
+tj. r * arccos ((A*B)/(|A||B|)), takze se to z pohledu shlukovani vzdy ten
+casoprostor roztahne do nejakeho hyperkvadru (a nebudeme to shlukovat nad
+silenymi hyperkoulemi, ale nad hyperkvadry) 
+
 
 2) jestlize je nejvyraznejsi namerena perioda 1.1 krat mensi (vetsi) nez
 perioda v datech, my ji nalezneme, ale po case se ta perioda zacne ztracet
@@ -30,3 +39,9 @@ perioda v datech, my ji nalezneme, ale po case se ta perioda zacne ztracet
 kruznice onech komplexnich cisel, ze kterych se pocita ten prumer)
 My bychom mohli hledat iterativne takovou periodu, ktera bude mit tuto vlastnost
 dlouhodobe co nejmensi (nejstabilnejsi amplituda)
+
+3) zajimavym konceptem zda se byti nasobeni amplitudy delkou periody - pokud
+jsou periodicke jevy velmi uzke (1 0 0 0 0 0 0 0 1 0 0 0 0 ...), pusobi to 
+nadejne
+
+4) zatim se to na papire jivi tak, ze je jedno, v jakem poradi pridavame periody
