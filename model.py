@@ -80,6 +80,7 @@ def model_0(input_coordinates, training_data, k=20,
                                       visualise=False, iterations=1000)
     COV = covariance_matrices2(X, C, U)
     # toto budu muset nejak rozumne rozsekat (po 10^8 INPUT*k - zabere 4GB RAM)
+    # from this now on the "density.py" is obsolete
     number_of_coordinates = np.shape(input_coordinates)[0]
     volume_of_data = number_of_coordinates * k
     number_of_parts = (volume_of_data // (10 ** 8)) + 1
@@ -101,7 +102,44 @@ def model_0(input_coordinates, training_data, k=20,
     return true_probabilities
 
 
-
+def model_fremen(input_coordinates, training_data, k=20,
+            data_location='/home/tom/projects/atomousek/stroll_fremen_nd/' +
+            'priklad.txt'):
+    """
+    input:
+    output:
+    uses:
+    objective:
+    """
+    X = dio.loading_file_fremen(file_location=data_location)
+    C, U, COV, densities = km.k_means(X, k,  # Gustafson–Kessel Algorithm
+                                      method='random',  # initialization
+                                      norm='M',  # metrics (Mahalanobis)
+                                      version='fuzzy',  # objective function
+                                      fuzzyfier=2,  # weighting exponent
+                                      visualise=False, iterations=1000)
+    COV = covariance_matrices2(X, C, U)
+    # toto budu muset nejak rozumne rozsekat (po 10^8 INPUT*k - zabere 4GB RAM)
+    # from this now on the "density.py" is obsolete
+    number_of_coordinates = np.shape(input_coordinates)[0]
+    volume_of_data = number_of_coordinates * k
+    number_of_parts = (volume_of_data // (10 ** 8)) + 1
+    length_of_part = number_of_coordinates // (number_of_parts)
+    probabilities = np.empty(number_of_coordinates)
+    finish = 0
+    for i in range(number_of_parts):
+        start = i * length_of_part
+        finish = (i + 1) * length_of_part - 1
+        part = psti2(input_coordinates[start: finish, :],
+                     C, COV, densities)
+        probabilities[start: finish] = part
+        gc.collect()
+    part = psti2(input_coordinates[finish:, :],
+                 C, COV, densities)
+    probabilities[finish:] = part
+    true_probabilities = probabilities *\
+        np.sum(training_data) / np.sum(probabilities)
+    return true_probabilities
 
 
 def model_visualisation(true_probabilities, training_data, shape_of_grid):

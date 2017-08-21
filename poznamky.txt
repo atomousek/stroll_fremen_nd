@@ -22,3 +22,11 @@ to tak, ze by bylo nejlepsi, kdyby velikosti tech dimenzi byly nejak pomeritelne
 - zda se mi, ze pokud budeme pridavat dalsi periody, kruznice odvozena
 od periody by mela mit delku odpovidajici nasobku periody mensi (v serazeni 
 od nejkratsi po nejdelsi tedy periody predesle)
+
+
+2) jestlize je nejvyraznejsi namerena perioda 1.1 krat mensi (vetsi) nez
+perioda v datech, my ji nalezneme, ale po case se ta perioda zacne ztracet
+(protoze se ty namerene hodnoty zacnou rozprostirat po cim dal vetsi casti
+kruznice onech komplexnich cisel, ze kterych se pocita ten prumer)
+My bychom mohli hledat iterativne takovou periodu, ktera bude mit tuto vlastnost
+dlouhodobe co nejmensi (nejstabilnejsi amplituda)
