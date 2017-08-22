@@ -111,32 +111,48 @@ def reconstruction_test(T, G, S, W):
     return np.c_[frekvence, delky, velikosti, pomer, errors, phis], np.r_[S[:, np.newaxis].T, sequences], deltas, alpha0, np.c_[S, full_reconstruction, np.abs(S - full_reconstruction)]
 
 
+def residues(time_frame_sums, time_frame_probs):
+    """
+    input: time_frame_sums numpy array shape_of_grid[0]x1, sum of measures
+                                                            over every
+                                                            timeframe
+           time_frame_probs numpy array shape_of_grid[0]x1, sum of 
+                                                            probabilities
+                                                            over every
+                                                            timeframe
+    output: T numpy array shape_of_grid[0]x1, time positions of measured values
+            S numpy array shape_of_grid[0]x1, sequence of measured values
+    uses:
+    objective: create dataset for fremen
+    """
+    return np.arrange(len(time_frame_sums)), time_frame_sums - time_frame_probs
 
 
 
 
-
-
-# tests
-#T, S = create_random_sequence(N=100000)
-T = np.arange(30*24)
-# S = np.tile(np.random.randint(2, size=5), 30)
-S = np.tile(np.array([4, 0, 1, 1, 1, 0, 3, 0, 1, 1, 1, 0, 4, 0, 1, 1, 1, 0, 3, 0, 1, 1, 1, 0]), 30)
-
-W = build_frequencies(24, 2)
-
-G = complex_numbers_batch(T, S, W)
-
-P = max_influence(W, G)
-
-tab, seq, deltas, prumer,full_reconstruction = reconstruction_test(T, G, S, W)
+## tests
+##T, S = create_random_sequence(N=100000)
+#T = np.arange(30*24)
+## S = np.tile(np.random.randint(2, size=5), 30)
+#S = np.tile(np.array([5, 4, 4, 3, 4, 3, 2, 1, 4, 3, 3, 2, 3, 2, 2, 1, 4, 3, 2, 1, 2, 1, 1, 0]), 30)
 #
+#W = build_frequencies(24, 2)
 #
-#s = S[:, np.newaxis].T
+#G = complex_numbers_batch(T, S, W)
 #
-#pokus = np.r_[s, seq]
+##G = complex_numbers_batch(T, S - prumer, W)
 #
+#P = max_influence(W, G)
 #
+#tab, seq, deltas, prumer,full_reconstruction = reconstruction_test(T, G, S, W)
+##tab_prum, seq_prum, deltas_prum, prumer_prum,full_reconstruction_prum = reconstruction_test(T, G, S - prumer, W)
+##
+##
+##s = S[:, np.newaxis].T
+##
+##pokus = np.r_[s, seq]
+##
+##
 
 np.sum(full_reconstruction, axis=0)
 

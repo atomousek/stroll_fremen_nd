@@ -66,32 +66,7 @@ def loading_priklad_natural(file_location='' +
     return df.iloc[:, 4:8].values
 
 
-def loading_file_fremen(periods, file_location='' +
-                            '/home/tom/projects/atomousek/stroll_fremen_nd/' +
-                            'priklad.txt'):
-    """
-    input: fremenization list, list of of the most influencing periods
-            file_location string, path to file
-    output: X numpy array nxd, matrix of naturalized and fremenized measures
-    uses: pd.read_csv(), np.float64(), np.min(), np.max(), np.cos(), np.sin(),
-          pd.iloc(), pd.values()
-    objective: load file, naturalize variables, return number of cubes
-    """
-    # read DataFrame
-    df = pd.read_csv(file_location, sep=' ', header=None, index_col=None)
-    # columns
-    # suppose first column as unix time and others positions in space
-    # default 'unix_time', 'x', 'y'
-    max_column = len(df.columns)
-    # naturalized and fremenized variables
-    for period in periods:
-        # cosinus
-        df[max_column + 1] = (period / (2*np.pi)) * np.cos(2*np.pi * df['hours'] / 24)
-        # sinus
-        df['sinus_t'] = (24 / (2*np.pi)) * np.sin(2*np.pi * df['hours'] / 24)
-    df['X_norm'] = df['x']
-    df['Y_norm'] = df['y']
-    return df.iloc[:, 4:8].values
+
 
 
 

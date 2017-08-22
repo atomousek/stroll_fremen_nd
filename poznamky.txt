@@ -40,8 +40,7 @@ kruznice onech komplexnich cisel, ze kterych se pocita ten prumer)
 My bychom mohli hledat iterativne takovou periodu, ktera bude mit tuto vlastnost
 dlouhodobe co nejmensi (nejstabilnejsi amplituda)
 
-3) zajimavym konceptem zda se byti nasobeni amplitudy delkou periody - pokud
-jsou periodicke jevy velmi uzke (1 0 0 0 0 0 0 0 1 0 0 0 0 ...), pusobi to 
-nadejne
+3) perioda s nejvetsi amplitudou nema pri rekonstrukci nejmensi odchylku
+ze vsech. Jedna z moznosti je vybirat periodu podle chyby rekonstrukce.
 
 4) zatim se to na papire jivi tak, ze je jedno, v jakem poradi pridavame periody

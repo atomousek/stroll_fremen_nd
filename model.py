@@ -97,46 +97,7 @@ def model_0(input_coordinates, training_data, k=20,
     part = psti2(input_coordinates[finish:, :],
                  C, COV, densities)
     probabilities[finish:] = part
-    true_probabilities = probabilities *\
-        np.sum(training_data) / np.sum(probabilities)
-    return true_probabilities
-
-
-def model_fremen(input_coordinates, training_data, k=20,
-            data_location='/home/tom/projects/atomousek/stroll_fremen_nd/' +
-            'priklad.txt'):
-    """
-    input:
-    output:
-    uses:
-    objective:
-    """
-    X = dio.loading_file_fremen(file_location=data_location)
-    C, U, COV, densities = km.k_means(X, k,  # Gustafson–Kessel Algorithm
-                                      method='random',  # initialization
-                                      norm='M',  # metrics (Mahalanobis)
-                                      version='fuzzy',  # objective function
-                                      fuzzyfier=2,  # weighting exponent
-                                      visualise=False, iterations=1000)
-    COV = covariance_matrices2(X, C, U)
-    # toto budu muset nejak rozumne rozsekat (po 10^8 INPUT*k - zabere 4GB RAM)
-    # from this now on the "density.py" is obsolete
-    number_of_coordinates = np.shape(input_coordinates)[0]
-    volume_of_data = number_of_coordinates * k
-    number_of_parts = (volume_of_data // (10 ** 8)) + 1
-    length_of_part = number_of_coordinates // (number_of_parts)
-    probabilities = np.empty(number_of_coordinates)
-    finish = 0
-    for i in range(number_of_parts):
-        start = i * length_of_part
-        finish = (i + 1) * length_of_part - 1
-        part = psti2(input_coordinates[start: finish, :],
-                     C, COV, densities)
-        probabilities[start: finish] = part
-        gc.collect()
-    part = psti2(input_coordinates[finish:, :],
-                 C, COV, densities)
-    probabilities[finish:] = part
+    # np.sum(training_data) nahradit len(X) a training data neloadovat !!!
     true_probabilities = probabilities *\
         np.sum(training_data) / np.sum(probabilities)
     return true_probabilities
@@ -204,6 +165,170 @@ def model_visualisation(true_probabilities, training_data, shape_of_grid):
         # save
         toimage(data).save(path)
     plt.close(fig)
+
+
+# for fremen
+
+
+def model_fremen(X, input_coordinates, overall_sum, structure, C_old, k=20):
+    """
+    input: X numpy array nxd, hyper space to analyze
+           input_coordinates numpy array, coordinates for model creation
+           overall_sum number (np.float64 or np.int64), sum of all measures
+           structure list(?), description of dimensions (which dim is time)
+           C_old numpy array kxd, centres from last iteration
+           k positive integer, number of clusters
+    output: true_probabilities 3D numpy array, probabilities over grid
+            C numpy array kxd, matrix of k d-dimensional cluster centres
+    uses: km.k_means(), covariance_matrices(), np.shape(), np.empty(),
+          psti(), gc.collect(), np.sum()
+    objective: create the model, grid of probabilities over time-space
+    """
+    # potrebuju napsat shlukovku s jinou metrikou a inicializaci!!!
+    C, U, COV, densities = km.k_means(X, k,  # Gustafson–Kessel Algorithm
+                                      method='random',  # initialization
+                                      norm='M',  # metrics (Mahalanobis)
+                                      version='fuzzy',  # objective function
+                                      fuzzyfier=2,  # weighting exponent
+                                      visualise=False, iterations=1000)
+    COV = covariance_matrices(X, C, U)
+    # toto budu muset nejak rozumne rozsekat (po 10^8 INPUT*k - zabere 4GB RAM)
+    # from this now on the "density.py" is obsolete
+    number_of_coordinates = np.shape(input_coordinates)[0]
+    volume_of_data = number_of_coordinates * k
+    number_of_parts = (volume_of_data // (10 ** 8)) + 1
+    length_of_part = number_of_coordinates // (number_of_parts)
+    probabilities = np.empty(number_of_coordinates)
+    finish = 0
+    for i in range(number_of_parts):
+        start = i * length_of_part
+        finish = (i + 1) * length_of_part - 1
+        part = psti(input_coordinates[start: finish, :],
+                     C, COV, densities)
+        probabilities[start: finish] = part
+        gc.collect()
+    part = psti(input_coordinates[finish:, :],
+                 C, COV, densities)
+    probabilities[finish:] = part
+    true_probabilities = probabilities *\
+        overall_sum / np.sum(probabilities)
+    return true_probabilities, C
+
+
+def first_clustering(X, k):
+    """
+    input:
+    output:
+    uses:
+    objective:
+    """
+    C, U, COV, densities = km.k_means(X, k,  # Gustafson–Kessel Algorithm
+                                      method='random',  # initialization
+                                      norm='M',  # metrics (Mahalanobis)
+                                      version='fuzzy',  # objective function
+                                      fuzzyfier=2,  # weighting exponent
+                                      visualise=False, iterations=1000)
+    return C
+
+
+def covariance_matrices(X, C, U):
+    """
+    input: X numpy array nxd, matrix of n d-dimensional observations
+           C numpy array kxd, matrix of k d-dimensional cluster centres
+           U numpy array kxn, matrix of weights
+    output: COV numpy array kxdxd, matrix of covariance matrices
+    uses: np.shape(), np.tile(), np.transpose(), np.cov(), np.linalg.inv(),
+          np.array()
+    objective: to find difference between every observation and every
+               center in every dimension
+    """
+    k, n = np.shape(U)
+    COV = []
+    for cluster in range(k):
+        C_grid = np.tile(C[cluster, :], (n, 1))
+        XC = X - C_grid  # METRIKA !!!
+        V = np.cov(XC, aweights=U[cluster, :], rowvar=False)
+        V = np.linalg.inv(V)
+        COV.append(V)
+    return np.array(COV)
+
+
+def psti(INPUT, C, COV, densities):
+    """
+    input:
+    output:
+    uses:
+    objective:
+    """
+    # toto musi byt jinak !
+    # budu muset ten cas roztahnout do vsech casovych dimenzi
+    X = np.c_[(24 / (2*np.pi)) * np.cos(2*np.pi * INPUT[:, 2] / 24),
+              (24 / (2*np.pi)) * np.sin(2*np.pi * INPUT[:, 2] / 24),
+              INPUT[:, 0:2]]
+    k = np.shape(C)[0]
+    n = np.shape(X)[0]
+    gc.collect()
+    D = []
+    for cluster in range(k):
+        C_cluster = np.tile(C[cluster, :], (n, 1))
+        XC = X - C_cluster  # METRIKA!!!!
+        VI = COV[cluster, :, :]
+        D.append(np.sum(np.dot(XC, VI) * XC, axis=1))
+        gc.collect()
+    D = np.array(D)
+    gc.collect()
+    D = km.partition_matrix(D, version='probability', fuzzyfier=1)
+    gc.collect()
+    D = densities * D
+    gc.collect()
+    return np.sum(D, axis=0)
+
+
+def time_frame_psti(X, input_coordinates, overall_sum, structure, C_old, k,
+                    shape_of_grid):
+    """
+    input: X numpy array nxd, hyper space to analyze
+           input_coordinates numpy array, coordinates for model creation
+           overall_sum number (np.float64 or np.int64), sum of all measures
+           structure list(?), description of dimensions (which dim is time)
+           C_old numpy array kxd, centres from last iteration
+           k positive integer, number of clusters
+           shape_of_grid numpy array dx1 int64, number of cells in every
+                                                dimension
+    output: time_frame_probs numpy array shape_of_grid[0]x1, sum of 
+                                                             probabilities
+                                                             over every
+                                                             timeframe
+            C numpy array kxd, matrix of k d-dimensional cluster centres
+    uses: model_fremen(), np.reshape(), np.sum()
+    objective:
+    """
+    true_probabilities, C = model_fremen(X, input_coordinates, overall_sum,
+                                         structure, C_old, k)
+    hist_probs = true_probabilities.reshape(shape_of_grid)
+    time_frame_probs = np.sum(hist_probs, axis=(1, 2))
+    return time_frame_probs, C
+
+
+def first_time_frame_psti(overall_sum, shape_of_grid):
+    """
+    input: overall_sum number (np.float64 or np.int64), sum of all measures
+           shape_of_grid numpy array dx1 int64, number of cells in every
+                                                dimension
+    output: time_frame_probs numpy array shape_of_grid[0]x1, sum of 
+                                                             probabilities
+                                                             over every
+                                                             timeframe
+    uses: np.array()
+    objective:
+    """
+    return np.array([overall_sum / shape_of_grid[0]] * shape_of_grid[0])
+
+
+
+
+
+
 
 
 
