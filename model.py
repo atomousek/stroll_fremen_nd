@@ -295,7 +295,7 @@ def time_frame_psti(X, input_coordinates, overall_sum, structure, C_old, k,
            k positive integer, number of clusters
            shape_of_grid numpy array dx1 int64, number of cells in every
                                                 dimension
-    output: time_frame_probs numpy array shape_of_grid[0]x1, sum of 
+    output: time_frame_probs numpy array shape_of_grid[0]x1, sum of
                                                              probabilities
                                                              over every
                                                              timeframe
@@ -315,7 +315,7 @@ def first_time_frame_psti(overall_sum, shape_of_grid):
     input: overall_sum number (np.float64 or np.int64), sum of all measures
            shape_of_grid numpy array dx1 int64, number of cells in every
                                                 dimension
-    output: time_frame_probs numpy array shape_of_grid[0]x1, sum of 
+    output: time_frame_probs numpy array shape_of_grid[0]x1, sum of
                                                              probabilities
                                                              over every
                                                              timeframe
