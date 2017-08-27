@@ -5,17 +5,6 @@
 import numpy as np
 
 
-def create_random_sequence(N=100000):
-    """
-    input: N integer, number of elements
-    output: T numpy array Nx1, corresponding time positions
-            S numpy array Nx1, sequence of zeros and ones
-    uses: np.random.randint()
-    objective: to create random sequence for testing
-    """
-    return np.arange(N), np.random.randint(2, size=N)
-
-
 def build_frequencies(longest, shortest):
     """
     input: longest float, legth of the longest (default) period in default
@@ -73,42 +62,15 @@ def chosen_period(T, S, longest, shortest):
            in default units
     output: P float64, length of the most influential frequency in default
             units
+            amplitude float64, max size of G
     uses:
     objective:
     """
     W = build_frequencies(longest, shortest)
     G = complex_numbers_batch(T, S, W)
     P = max_influence(W, G)
-    return P
-
-
-def reconstruction_test(T, G, S, W):
-    """
-    input: T numpy array Nx1, time positions of measured values
-           G numpy array Lx1, sequence of complex numbers corresponding
-           to the frequencies from W
-           S numpy array Nx1, sequence of measured values
-           W numpy array Lx1, sequence of reasonable frequencies
-    output:
-    uses:
-    objective: to reconstruct S using every one period and compare it with
-               delka periody, frekvence periody, velikost vlivu a
-               pomer velikosti vlivu a frekvence = soucin amplitudy a delky (!)
-    """
-    phis = np.angle(G)[1:, np.newaxis]
-    alphas = np.absolute(G)
-    alpha0 = alphas[0]
-    alphas = alphas[1:, np.newaxis]
-    ws = W[1:, np.newaxis]
-    sequences = alpha0 + alphas * np.cos(ws * np.pi * 2 * T + phis)
-    full_reconstruction = alpha0 + np.sum(alphas * np.cos(ws * np.pi * 2 * T + phis), axis=0)
-    deltas = np.abs(sequences - S)
-    errors = np.sum(deltas, axis=1)
-    velikosti = np.absolute(G)[1:, np.newaxis]
-    frekvence = ws
-    delky = 1/ws
-    pomer = velikosti / frekvence
-    return np.c_[frekvence, delky, velikosti, pomer, errors, phis], np.r_[S[:, np.newaxis].T, sequences], deltas, alpha0, np.c_[S, full_reconstruction, np.abs(S - full_reconstruction)]
+    amplitude = np.max(np.absolute(G[1:]))
+    return P, amplitude
 
 
 def residues(time_frame_sums, time_frame_probs):
@@ -116,7 +78,7 @@ def residues(time_frame_sums, time_frame_probs):
     input: time_frame_sums numpy array shape_of_grid[0]x1, sum of measures
                                                             over every
                                                             timeframe
-           time_frame_probs numpy array shape_of_grid[0]x1, sum of 
+           time_frame_probs numpy array shape_of_grid[0]x1, sum of
                                                             probabilities
                                                             over every
                                                             timeframe
@@ -154,11 +116,48 @@ def residues(time_frame_sums, time_frame_probs):
 ##
 ##
 
-np.sum(full_reconstruction, axis=0)
+# np.sum(full_reconstruction, axis=0)
 
 
-
-
+#def create_random_sequence(N=100000):
+#    """
+#    input: N integer, number of elements
+#    output: T numpy array Nx1, corresponding time positions
+#            S numpy array Nx1, sequence of zeros and ones
+#    uses: np.random.randint()
+#    objective: to create random sequence for testing
+#    """
+#    return np.arange(N), np.random.randint(2, size=N)
+#
+#
+#
+#def reconstruction_test(T, G, S, W):
+#    """
+#    input: T numpy array Nx1, time positions of measured values
+#           G numpy array Lx1, sequence of complex numbers corresponding
+#           to the frequencies from W
+#           S numpy array Nx1, sequence of measured values
+#           W numpy array Lx1, sequence of reasonable frequencies
+#    output:
+#    uses:
+#    objective: to reconstruct S using every one period and compare it with
+#               delka periody, frekvence periody, velikost vlivu a
+#               pomer velikosti vlivu a frekvence = soucin amplitudy a delky (!)
+#    """
+#    phis = np.angle(G)[1:, np.newaxis]
+#    alphas = np.absolute(G)
+#    alpha0 = alphas[0]
+#    alphas = alphas[1:, np.newaxis]
+#    ws = W[1:, np.newaxis]
+#    sequences = alpha0 + alphas * np.cos(ws * np.pi * 2 * T + phis)
+#    full_reconstruction = alpha0 + np.sum(alphas * np.cos(ws * np.pi * 2 * T + phis), axis=0)
+#    deltas = np.abs(sequences - S)
+#    errors = np.sum(deltas, axis=1)
+#    velikosti = np.absolute(G)[1:, np.newaxis]
+#    frekvence = ws
+#    delky = 1/ws
+#    pomer = velikosti / frekvence
+#    return np.c_[frekvence, delky, velikosti, pomer, errors, phis], np.r_[S[:, np.newaxis].T, sequences], deltas, alpha0, np.c_[S, full_reconstruction, np.abs(S - full_reconstruction)]
 
 
 

@@ -1,0 +1,158 @@
+# Created on Sun Aug 27 13:11:12 2017
+# @author: tom
+
+import numpy as np
+import clustering as cl
+import dataset_io as dio
+
+# for fremen
+
+
+def first_time_frame_probs(overall_sum, shape_of_grid):
+    """
+    input: overall_sum number (np.float64 or np.int64), sum of all measures
+           shape_of_grid numpy array dx1 int64, number of cells in every
+                                                dimension
+    output: time_frame_probs numpy array shape_of_grid[0]x1, sum of
+                                                             probabilities
+                                                             over every
+                                                             timeframe
+    uses: np.array()
+    objective: to create first time_frame_probs, i.e. time frames of a model
+               that do not count the time
+    """
+    return np.array([overall_sum / shape_of_grid[0]] * shape_of_grid[0])
+
+
+def first_clustering(path, k, structure):
+    """
+    input: path string, path to file
+           k positive integer, number of clusters
+           structure list(int, list(floats)), number of non-hypertime
+                                              dimensions and list of hypertime
+                                              radii
+    output: C numpy array kxd, matrix of k d-dimensional cluster centres
+            U numpy array kxn, matrix of weights
+    uses: dio.loading_data(), cl.k_means()
+    objective: to create C and U for clusters initialization in next iteration
+    """
+    X = dio.loading_data(path)[:, 1:]
+    C, U, COV, densities = cl.k_means(X, k, structure,  # Gustafson–Kessel
+                                      method='random',  # initialization
+                                      version='fuzzy',  # objective function
+                                      fuzzyfier=2,  # weighting exponent
+                                      iterations=1000,
+                                      C_in=0, U_in=0)
+    return C, U
+
+
+def first_structure(path):
+    """
+    input: None
+    output: structure list(int, list(floats)), number of non-hypertime
+                                              dimensions and list of hypertime
+                                              radii
+    uses: np.shape(), dio.loading_data()
+    objective: to create initial structure
+    """
+    dim = np.shape(dio.loading_data(path))[1] - 1
+    return [dim, []]
+
+
+def first_amplitudes():
+    """
+    input: None
+    output: amplitudes list(float64), in thos case it is empty
+    uses: None
+    objective: return empty list of amplitudes
+    """
+    return []
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

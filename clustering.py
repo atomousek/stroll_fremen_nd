@@ -6,13 +6,15 @@ import numpy as np
 
 # for fremen
 
+
 def distance_matrix(X, C, U, structure):
     """
     input: X numpy array nxd, matrix of n d-dimensional observations
            C numpy array kxd, matrix of k d-dimensional cluster centres
            U numpy array kxn, matrix of weights
-           structure list(int, list(floats)), number of non-hypertime dimensions
-                                              and list of hypertime radii
+           structure list(int, list(floats)), number of non-hypertime
+                                              dimensions and list of hypertime
+                                              radii
     output: D numpy array kxn, matrix of distances between every observation
             and every center
             COV numpy array kxdxd (?), matrix of cluster covariance
@@ -25,14 +27,14 @@ def distance_matrix(X, C, U, structure):
     D = []
     COV = []
     for cluster in range(k):
-        Ci_nxd = np.tile(C[cluster, :], (n, 1))
+        Ci = np.tile(C[cluster, :], (n, 1))
         # hypertime version of X - Ci_nxd
-        XC = hypertime_substraction(X, Ci_nxd, structure)
+        XC = hypertime_substraction(X, Ci, structure)
         V = np.cov(XC, aweights=U[cluster, :], rowvar=False)
         d = np.shape(V)[0]
         VD = V / (np.linalg.det(V) ** (1 / d))
         VI = np.linalg.inv(VD)
-        D.append(np.sum(np.dot(XC, VI) * X, axis=1))
+        D.append(np.sum(np.dot(XC, VI) * XC, axis=1))
         COV.append(VI)
         gc.collect()
     return np.array(D), np.array(COV)
@@ -51,18 +53,12 @@ def partition_matrix(D, version='fuzzy', fuzzyfier=2):
     objective: to create partition matrix (weights for new centroids
                                            calculation)
     """
-    if version == 'softmax':
-        D = soft_max(-1 * D)  # not tested
-    elif version == 'fuzzy':
+    if version == 'fuzzy':
         D = 1 / (D + np.exp(-100))
         D = D / np.sum(D, axis=0, keepdims=True)
-    elif version == 'hard':
-        indices = np.argmin(D, axis=0)
-        D = np.zeros_like(D)
-        D[indices, np.arange(np.shape(D)[1])] = 1
     elif version == 'probability':
         U = 1 / (D + np.exp(-100))
-        # U[D < 1.5] = 0.67
+        # U[D < 1.5] = 0.67  # zvazit...
         U[D < 1] = 1
         U[D > 16] = 0
         D = np.empty_like(U)
@@ -82,15 +78,10 @@ def new_centroids(X, U, k, d):
     for centroid in range(k):
         U_part = np.tile(U[centroid, :], (d, 1)).T
         C[centroid, :] = (np.sum(U_part * X, axis=0) / np.sum(U_part, axis=0))
-    # 1.3 krat pomalejsi verze:
-    # X_knd = np.tile(X, (k, 1, 1))
-    # U_dkn = np.tile(U, (d, 1, 1))
-    # U_knd = np.transpose(U_dkn, [1, 2, 0])
-    # C_kn = np.sum(U_knd * X_knd, axis=2) / np.sum(U_knd, axis=2)
     return C
 
 
-def initialization(X, k, method='random', C_in=0, U_in=0):
+def initialization(X, k, method='random', C_in=0, U_in=0, structure=[1, []]):
     """
     input: X numpy array nxd, matrix of n d-dimensional observations
            k positive integer, number of clusters
@@ -110,26 +101,41 @@ def initialization(X, k, method='random', C_in=0, U_in=0):
     elif method == 'old_C_U':
         C = C_in
         U = U_in
+    elif method == 'prev_dim':
+        # supposing that the algorith adds only one circle per iteration
+        d = np.shape(X)[1]
+        C = np.empty(k, d)
+        # known part of C
+        d_in = np.shape(C_in)[1]
+        C[:, : d_in] = C_in
+        # unknown part of C lying randomly (R) on the circle with radius r
+        R = np.random.rand(k, 1)
+        r = structure[1][-1]
+        C[:, d_in:] = np.c_[r * np.cos(2*np.pi * R),
+                            r * np.sin(2*np.pi * R)]
+        U = U_in
     else:
         print('unknown method of initialization, returning zeros!')
         C = np.zeros((k, d))
     return C, U
 
 
-def k_means(X, k, method='random', norm='M', version='fuzzy', fuzzyfier=2,
-            visualise=False, iterations=100, C_in=0, U_in=0):
+def k_means(X, k, structure, method='random', version='fuzzy', fuzzyfier=2,
+            iterations=100, C_in=0, U_in=0):
     """
     input: X numpy array nxd, matrix of n d-dimensional observations
            k positive integer, number of clusters
-           method string, defines type of initialization, possible ('random')
-           norm string, defines metrics (possible 'L1', 'L2', 'M')
-           version string, version of making weights (possible 'hard', 'fuzzy',
-           'softmax')
+           method string, defines type of initialization, possible ('random',
+                                                        'old_C_U', 'prev_dim')
+           version string, version of making weights (possible 'fuzzy',
+           'probability')
            fuzzyfier number, larger or equal one, not too large
-           visualise boolean, possibility for 2D data to visualize some steps
            iterations integer, max number of iterations
     output: C numpy array kxd, matrix of k d-dimensional cluster centres
             U numpy array kxn, matrix of weights
+            COV numpy array kxdxd, matrix of covariance matrices
+            densities numpy array kx1, matrix of number of
+                    measurements belonging to every cluster
     uses: np.shape(), np.sum(),
           initialization(), distance_matrix(), partition_matrix(),
           new_centroids(), visualisation()
@@ -139,11 +145,7 @@ def k_means(X, k, method='random', norm='M', version='fuzzy', fuzzyfier=2,
     J_old = 0
     C, U = initialization(X, k, method, C_in, U_in)
     for iteration in range(iterations):
-        if norm == 'M':
-            D, COV = distance_matrix(X, C, U, norm)
-        else:
-            D = distance_matrix(X, C, U, norm)
-            COV = 0
+        D, COV = distance_matrix(X, C, U, structure)
         U = partition_matrix(D, version, fuzzyfier)
         C = new_centroids(X, U, k, d)
         J_new = np.sum(U * D)
@@ -151,33 +153,22 @@ def k_means(X, k, method='random', norm='M', version='fuzzy', fuzzyfier=2,
             print('no changes! breaking loop.')
             print('iteration: ', iteration)
             print(J_new)
-            if visualise:
-                U_viz = partition_matrix(D, version='probability', fuzzyfier=1)
-                U_viz = U_viz * (np.sum(U_viz, axis=1, keepdims=True) /
-                                 np.sum(U_viz))
-                visualisation(X, C, np.sum(U_viz, axis=0))
             break
         if iteration % 10 == 0:
             print(J_new)
-            if visualise:
-                U_viz = partition_matrix(D, version='probability', fuzzyfier=1)
-                U_viz = U_viz * (np.sum(U_viz, axis=1, keepdims=True) /
-                                 np.sum(U_viz))
-                visualisation(X, C, np.sum(U_viz, axis=0))
         J_old = J_new
-    # U_viz = partition_matrix(D, version='probability', fuzzyfier=1)
-    # hustoty_shluku = np.sum(U_viz, axis=1, keepdims=True) / np.sum(U_viz)
-    hustoty_shluku = np.sum(U, axis=1, keepdims=True) / np.sum(U)
-    return C, U, COV, hustoty_shluku
+    densities = np.sum(U, axis=1, keepdims=True) / np.sum(U)
+    return C, U, COV, densities
 
 
-def hypertime_substraction(X, Ci_nxd, structure):
+def hypertime_substraction(X, Ci, structure):
     """
     input: X numpy array nxd, matrix of n d-dimensional observations
            Ci_nxd numpy array nxd, matrix of n d-dimensional cluster centre
                                    copies
-           structure list(int, list(floats)), number of non-hypertime dimensions
-                                              and list of hypertime radii
+           structure list(int, list(floats)), number of non-hypertime
+                                              dimensions and list of hypertime
+                                              radii
     output: XC numpy array nxWTF, matrix of n WTF-dimensional substractions
     uses:
     objective: to substract C from X in hypertime
@@ -185,20 +176,18 @@ def hypertime_substraction(X, Ci_nxd, structure):
     XC = np.empty_like(X)
     # non-hypertime dimensions substraction
     dim = structure[0]
-    XC[:, : dim] = X[:, : dim] - C[:, : dim]
+    XC[:, : dim] = X[:, : dim] - Ci[:, : dim]
     # hypertime dimensions substraction
-    periods = structure[1]
-    for period in range(len(periods)):
+    radii = structure[1]
+    for period in range(len(radii)):
         dim = dim + period * 2
-        radius = periods[period]
-        XC[:, dim: dim + 2] = radius * np.arccos(np.sum(X[:, dim: dim + 2] *
-                                                        C[:, dim: dim + 2],
-                                                        axis=1, keepdims=True) /
-                                                 (radius ** 2))
+        r = radii[period]
+        XC[:, dim: dim + 2] = r * np.arccos(np.sum(X[:, dim: dim + 2] *
+                                                   Ci[:, dim: dim + 2],
+                                                   axis=1, keepdims=True) /
+                                            (r ** 2))
     return XC
 
-
-# JA TY VZDALENOSTI BUDU MUSET, KURVA, PREPOCITAVAT TAM I ZPET !!!!!
 
 
 
