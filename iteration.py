@@ -3,23 +3,59 @@
 
 
 import numpy as np
+from time import clock
+
 import model as mdl
 import fremen as fm
 import dataset_io as dio
+import initialization as init
+import grid
 
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 from scipy.misc import toimage
 
 
-def time_frame_psti(longest, shortest,  # added by user
-                    input_coordinates, overall_sum, structure, path, C_old,
-                    U_old, k, shape_of_grid, time_frame_sums, amplitudes):
+def method(longest, shortest, path, edge_of_square, timestep, k):
+    """
+    input:
+    output:
+    uses:
+    objective:
+    """
+    amplitudes = init.first_amplitudes()
+    structure = init.first_structure(path)
+    C, U = init.first_clustering(path, k, structure)
+    input_coordinates, time_frame_sums, overall_sum, shape_of_grid =\
+        grid.time_space_positions(edge_of_square, timestep, path)
+    # iteration
+    jdi_dal = 0
+    iteration = 0
+    while jdi_dal == 0:
+        start = clock()
+        C, U, amplitudes, structure, hist_probs, hist_data, jdi_dal =\
+            iteration_step(longest, shortest, path,  # added by user
+                           input_coordinates, overall_sum, structure, C,
+                           U, k, shape_of_grid, time_frame_sums, amplitudes)
+        finish = clock()
+        iteration += 1
+        print('iteration: ', iteration)
+        print('processor time: ', finish - start)
+    # some output
+    print('iterations finished, visualisation started')
+    model_visualisation(hist_probs, hist_data, shape_of_grid)
+
+
+def iteration_step(longest, shortest, path,  # added by user
+                   input_coordinates, overall_sum, structure, C_old,
+                   U_old, k, shape_of_grid, time_frame_sums, amplitudes):
     """
 #    input: X numpy array nxd, hyper space to analyze
 #           input_coordinates numpy array, coordinates for model creation
 #           overall_sum number (np.float64 or np.int64), sum of all measures
-#           structure list(?), description of dimensions (which dim is time)
+#           structure list(int, list(floats), list(floats)),
+#                      number of non-hypertime dimensions, list of hypertime
+#                      radii nad list of wavelengths
 #           C_old numpy array kxd, centres from last iteration
 #           k positive integer, number of clusters
 #           shape_of_grid numpy array dx1 int64, number of cells in every
@@ -40,23 +76,31 @@ def time_frame_psti(longest, shortest,  # added by user
     T, S = fm.residues(time_frame_sums, time_frame_probs)
     P, amplitude = fm.chosen_period(T, S, longest, shortest)
     amplitudes.append(amplitude)
-    structure[1].append(P / (2 * np.pi))  # toto je spatne
+    structure[1].append(4)  # konstantni polomer pro vsechny dimenze
+    structure[2].append(P)
     # jaky je vztah mezi P a novou dimenzi? kde to vlastne resim? fuck!
     # mozna budu muset premodelovat "structure" a krom polomeru tam dat i delky
     if len(amplitudes) < 3:  # hodne trapna podminka :)
         jdi_dal = 1
-    if jdi_dal == 1:
-        # zavolej sam sebe, ne? Nebo vytvorim funkci, ktera toto bude volat,
-        # dokud tato funkce nevrati ukoncovaci priznak (return ..., 1)
-        return C, U, amplitudes, structure
+        # trochu zbesile, ale nepotrebuji to k nicemu az na konci a je to
+        # pravdepodobne dost velke
+        hist_probs = 0
+        hist_data = 0
     else:
         # zavolej visualisation nebo neco takoveho
         hist_data = np.histogramdd(dio.loading_data(path), bins=shape_of_grid,
                                    range=None, normed=False, weights=None)[0]
-        model_visualisation(hist_probs, hist_data, shape_of_grid)
+    return C, U, amplitudes, structure, hist_probs, hist_data, jdi_dal
+
+
+
+
+
+
 
 # jak je to teda s tim shape_of_grid? prvni je casova dimenze???
 # to se musi zohlednit ve vizualizaci ve for cyklu
+# po teto uprave by to mohlo byt funkcni
 
 
 def model_visualisation(H_probs, H_train, shape_of_grid):

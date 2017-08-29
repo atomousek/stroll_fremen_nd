@@ -28,9 +28,9 @@ def first_clustering(path, k, structure):
     """
     input: path string, path to file
            k positive integer, number of clusters
-           structure list(int, list(floats)), number of non-hypertime
-                                              dimensions and list of hypertime
-                                              radii
+           structure list(int, list(floats), list(floats)),
+                      number of non-hypertime dimensions, list of hypertime
+                      radii nad list of wavelengths
     output: C numpy array kxd, matrix of k d-dimensional cluster centres
             U numpy array kxn, matrix of weights
     uses: dio.loading_data(), cl.k_means()
@@ -49,14 +49,14 @@ def first_clustering(path, k, structure):
 def first_structure(path):
     """
     input: None
-    output: structure list(int, list(floats)), number of non-hypertime
-                                              dimensions and list of hypertime
-                                              radii
+    output: structure list(int, list(floats), list(floats)),
+                      number of non-hypertime dimensions, list of hypertime
+                      radii nad list of wavelengths
     uses: np.shape(), dio.loading_data()
     objective: to create initial structure
     """
     dim = np.shape(dio.loading_data(path))[1] - 1
-    return [dim, []]
+    return [dim, [], []]
 
 
 def first_amplitudes():

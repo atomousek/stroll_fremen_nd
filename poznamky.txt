@@ -25,12 +25,17 @@ od nejkratsi po nejdelsi tedy periody predesle)
 
 - pak je tu ovsem krajnasova myslenka, ze by delka kruznice mela odrazet vliv
 periody
+... jenze ja si myslim, ze ta delka je tam jen proto, any to shlukovani
+nezkolabovalo na ciselnych operacich - pripadne muze odrazet nejakou skutecnost
+(pocet hodin, dni, a podobne) at to je interpretovatelne - a hlavne neni jasne,
+co znamena vliv (amplituda) periody v teto metode
 
 - a k tomu se vaze finta zvana "metrika na miru", kdy na kazde casove kruznici 
 spocitame vzdalenost jako delku casti kruznice mezi merenimi (cosinova metrika,
 tj. r * arccos ((A*B)/(|A||B|)), takze se to z pohledu shlukovani vzdy ten
 casoprostor roztahne do nejakeho hyperkvadru (a nebudeme to shlukovat nad
 silenymi hyperkoulemi, ale nad hyperkvadry) 
+... zapracovano
 
 
 2) jestlize je nejvyraznejsi namerena perioda 1.1 krat mensi (vetsi) nez
@@ -43,4 +48,19 @@ dlouhodobe co nejmensi (nejstabilnejsi amplituda)
 3) perioda s nejvetsi amplitudou nema pri rekonstrukci nejmensi odchylku
 ze vsech. Jedna z moznosti je vybirat periodu podle chyby rekonstrukce.
 
-4) zatim se to na papire jivi tak, ze je jedno, v jakem poradi pridavame periody
+4) zatim se to na papire jevi tak, ze je jedno, v jakem poradi pridavame periody
+
+5) jedna z moznsti, jak definovat tu ulohu, je, ze chceme model, ktery bude
+k popisu pouzivat co mozna nejmene shluku. Ocekaval bych, ze pokud existuji
+dve hodnoty (1, 0), ktere se v case meni, na zacatku potrebuji tolik shluku,
+kolik je tam prechodu. Ale na zaver potrebuji jen dva shluky a pekne postaveny
+prostor.
+
+- existuje predstava, ze cim vic pridame shluku, tim mensi je celkova odchylka
+namerenych hodnot od prirazenych center, ale ze tato odchylka klesa po krivce,
+ktera pripomina hyperbolu. A tudiz lze vybrat takovy pocet shluku, ktery
+odpovida pozici, ktera je nejblize pocatku souradnic (xova pocet shluku,
+yova soucet odchylek)
+
+- mohli bychom tedy vyse zminenou metodu pouzit k nalezeni situace, kdy uz nema
+smysl pridavat periody, protoze se vyse zminena krivka uz moc nemeni... 

@@ -15,9 +15,9 @@ def model_fremen(input_coordinates, overall_sum, structure, path, C_old, U_old,
     """
     input: input_coordinates numpy array, coordinates for model creation
            overall_sum number (np.float64 or np.int64), sum of all measures
-           structure list(int, list(floats)), number of non-hypertime
-                                              dimensions and list of hypertime
-                                              radii
+           structure list(int, list(floats), list(floats)),
+                      number of non-hypertime dimensions, list of hypertime
+                      radii nad list of wavelengths
            path string, path to file
            C_old numpy array kxd, centres from last iteration
            U_old numpy array kxn, weights from last iteration
@@ -41,9 +41,9 @@ def model_fremen(input_coordinates, overall_sum, structure, path, C_old, U_old,
 def model_parameters(path, structure, C_old, U_old, k):
     """
     input: path string, path to file
-           structure list(int, list(floats)), number of non-hypertime
-                                              dimensions and list of hypertime
-                                              radii
+           structure list(int, list(floats), list(floats)),
+                      number of non-hypertime dimensions, list of hypertime
+                      radii nad list of wavelengths
            C_old numpy array kxd, centres from last iteration
            U_old numpy array nxd, weights from last iteration
            k positive integer, number of clusters
@@ -71,9 +71,9 @@ def covariance_matrices(X, C, U, structure):
     input: X numpy array nxd, matrix of n d-dimensional observations
            C numpy array kxd, matrix of k d-dimensional cluster centres
            U numpy array kxn, matrix of weights
-           structure list(int, list(floats)), number of non-hypertime
-                                              dimensions and list of hypertime
-                                              radii
+           structure list(int, list(floats), list(floats)),
+                      number of non-hypertime dimensions, list of hypertime
+                      radii nad list of wavelengths
     output: COV numpy array kxdxd, matrix of covariance matrices
     uses: np.shape(), np.tile(), cl.hypertime_substraction(, np.cov(),
           np.linalg.inv(), np.array()
@@ -100,9 +100,9 @@ def histogram_probs(input_coordinates, C, COV, densities, structure, k,
            COV numpy array kxdxd, matrix of covariance matrices
            densities numpy array kx1, matrix of number of measurements
                                       belonging to every cluster
-           structure list(int, list(floats)), number of non-hypertime
-                                              dimensions and list of hypertime
-                                              radii
+           structure list(int, list(floats), list(floats)),
+                      number of non-hypertime dimensions, list of hypertime
+                      radii nad list of wavelengths
            k positive integer, number of clusters
            shape_of_grid numpy array dx1 int64, number of cells in every
                                                 dimension
@@ -123,9 +123,9 @@ def iter_over_probs(input_coordinates, C, COV, densities, structure, k):
            COV numpy array kxdxd, matrix of covariance matrices
            densities numpy array kx1, matrix of number of measurements
                                       belonging to every cluster
-           structure list(int, list(floats)), number of non-hypertime
-                                              dimensions and list of hypertime
-                                              radii
+           structure list(int, list(floats), list(floats)),
+                      number of non-hypertime dimensions, list of hypertime
+                      radii nad list of wavelengths
            k positive integer, number of clusters
     output: probs numpy array len(input_coordinates)x1, probabilities obtained
                                 from model in positions of input_coordinates
@@ -159,9 +159,9 @@ def probabilities(data, C, COV, densities, structure, k):
            COV numpy array kxdxd, matrix of covariance matrices
            densities numpy array kx1, matrix of number of measurements
                                       belonging to every cluster
-           structure list(int, list(floats)), number of non-hypertime
-                                              dimensions and list of hypertime
-                                              radii
+           structure list(int, list(floats), list(floats)),
+                      number of non-hypertime dimensions, list of hypertime
+                      radii nad list of wavelengths
            k positive integer, number of clusters
     output: probs numpy array len(data)x1, probabilities obtained
                                            from model in positions of data

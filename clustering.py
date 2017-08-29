@@ -12,9 +12,9 @@ def distance_matrix(X, C, U, structure):
     input: X numpy array nxd, matrix of n d-dimensional observations
            C numpy array kxd, matrix of k d-dimensional cluster centres
            U numpy array kxn, matrix of weights
-           structure list(int, list(floats)), number of non-hypertime
-                                              dimensions and list of hypertime
-                                              radii
+           structure list(int, list(floats), list(floats)),
+                      number of non-hypertime dimensions, list of hypertime
+                      radii nad list of wavelengths
     output: D numpy array kxn, matrix of distances between every observation
             and every center
             COV numpy array kxdxd (?), matrix of cluster covariance
@@ -88,8 +88,8 @@ def initialization(X, k, method='random', C_in=0, U_in=0, structure=[1, []]):
            method string, defines type of initialization, possible ('random')
     output: C numpy array kxd, matrix of k d-dimensional cluster centres
             U numpy array kxn, matrix of weights
-    uses: np.shape(), np.random.randn(), np.sum(), np.zeros(),
-          new_centroids()
+    uses: np.shape(), np.random.randn(), np.sum(), np.zeros()
+            DODELAT!!!
     objective: create initial centroids
     """
     if method == 'random':
@@ -125,12 +125,16 @@ def k_means(X, k, structure, method='random', version='fuzzy', fuzzyfier=2,
     """
     input: X numpy array nxd, matrix of n d-dimensional observations
            k positive integer, number of clusters
+           structure list(int, list(floats), list(floats)),
+                      number of non-hypertime dimensions, list of hypertime
+                      radii nad list of wavelengths
            method string, defines type of initialization, possible ('random',
                                                         'old_C_U', 'prev_dim')
            version string, version of making weights (possible 'fuzzy',
            'probability')
            fuzzyfier number, larger or equal one, not too large
            iterations integer, max number of iterations
+           DODELAT!!!
     output: C numpy array kxd, matrix of k d-dimensional cluster centres
             U numpy array kxn, matrix of weights
             COV numpy array kxdxd, matrix of covariance matrices
@@ -166,9 +170,9 @@ def hypertime_substraction(X, Ci, structure):
     input: X numpy array nxd, matrix of n d-dimensional observations
            Ci_nxd numpy array nxd, matrix of n d-dimensional cluster centre
                                    copies
-           structure list(int, list(floats)), number of non-hypertime
-                                              dimensions and list of hypertime
-                                              radii
+           structure list(int, list(floats), list(floats)),
+                      number of non-hypertime dimensions, list of hypertime
+                      radii nad list of wavelengths
     output: XC numpy array nxWTF, matrix of n WTF-dimensional substractions
     uses:
     objective: to substract C from X in hypertime

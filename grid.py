@@ -9,7 +9,7 @@
 #    objective:
 #    """
 #
-import pandas as pd
+
 import numpy as np
 import dataset_io as dio
 
@@ -19,8 +19,7 @@ import dataset_io as dio
 
 def time_space_positions(edge_of_square=0.05, timestep=300,
                          path='/home/tom/projects/atomousek/' +
-                         'stroll_fremen_nd/priklad.txt',
-                         ):
+                         'stroll_fremen_nd/priklad.txt'):
     """
     input: edge_of_square float, spatial edge of cell in meters
            timestep float, time edge of cell in seconds

@@ -36,13 +36,15 @@ def create_X(data, structure):
     """
     dim = structure[0]
     radii = structure[1]
+    wavelengths = structure[2]
     X = np.empty((len(data), dim + len(radii) * 2))
     X[:, : dim] = data[:, 1: dim + 1]
     for period in range(len(radii)):
         r = radii[period]
+        Lambda = wavelengths[period]
         dim = dim + period * 2
-        X[:, dim: dim + 2] = np.c_[r * np.cos(data[:, 0] / r),
-                                   r * np.sin(data[:, 0] / r)]
+        X[:, dim: dim + 2] = np.c_[r * np.cos(data[:, 0] * 2 * np.pi / Lambda),
+                                   r * np.sin(data[:, 0] * 2 * np.pi / Lambda)]
     return X
 
 
