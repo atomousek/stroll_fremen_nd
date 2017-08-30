@@ -23,19 +23,11 @@ def method(longest, shortest, path, edge_of_square, timestep, k):
     uses:
     objective:
     """
-    amplitudes = init.first_amplitudes()
-    structure = init.first_structure(path)
-    C, U = init.first_clustering(path, k, structure)
-    input_coordinates, time_frame_sums, overall_sum, shape_of_grid =\
-        grid.time_space_positions(edge_of_square, timestep, path)
-#
-    time_frame_probs = init.first_time_frame_probs(overall_sum, shape_of_grid)
-    T, S = fm.residues(time_frame_sums, time_frame_probs)
-    P, amplitude = fm.chosen_period(T, S, longest, shortest)
-    amplitudes.append(amplitude)
-    structure[1].append(4)  # konstantni polomer pro vsechny dimenze
-    structure[2].append(P)
-#
+    # initialization
+    input_coordinates, overall_sum, structure, C,\
+        U, k, shape_of_grid, time_frame_sums, amplitudes, T =\
+        init.whole_initialization(path, k, edge_of_square, timestep, longest,
+                                  shortest)
     # iteration
     jump_out = 0
     iteration = 0
@@ -45,7 +37,7 @@ def method(longest, shortest, path, edge_of_square, timestep, k):
             densities =\
             iteration_step(longest, shortest, path,  # added by user
                            input_coordinates, overall_sum, structure, C,
-                           U, k, shape_of_grid, time_frame_sums, amplitudes)
+                           U, k, shape_of_grid, time_frame_sums, amplitudes, T)
         finish = clock()
         iteration += 1
         print('iteration: ', iteration)
@@ -59,7 +51,7 @@ def method(longest, shortest, path, edge_of_square, timestep, k):
 
 def iteration_step(longest, shortest, path,  # added by user
                    input_coordinates, overall_sum, structure, C_old,
-                   U_old, k, shape_of_grid, time_frame_sums, amplitudes):
+                   U_old, k, shape_of_grid, time_frame_sums, amplitudes, T):
     """
 #    input: X numpy array nxd, hyper space to analyze
 #           input_coordinates numpy array, coordinates for model creation
@@ -84,12 +76,12 @@ def iteration_step(longest, shortest, path,  # added by user
         mdl.model_fremen(input_coordinates, overall_sum,
                          structure, path, C_old, U_old, k, shape_of_grid)
     time_frame_probs = np.sum(hist_probs, axis=(1, 2))
-    T, S = fm.residues(time_frame_sums, time_frame_probs)
+    S = fm.residues(time_frame_sums, time_frame_probs)
+    print('soucet chyb: ', np.sum(np.abs(S)))
     P, amplitude = fm.chosen_period(T, S, longest, shortest)
-
     # jaky je vztah mezi P a novou dimenzi? kde to vlastne resim? fuck!
     # mozna budu muset premodelovat "structure" a krom polomeru tam dat i delky
-    if len(amplitudes) < 5:  # hodne trapna podminka :)
+    if len(amplitudes) < 11:  # hodne trapna podminka :)
         amplitudes.append(amplitude)
         structure[1].append(4)  # konstantni polomer pro vsechny dimenze
         structure[2].append(P)
@@ -104,8 +96,8 @@ def iteration_step(longest, shortest, path,  # added by user
         # zavolej visualisation nebo neco takoveho
         hist_data = np.histogramdd(dio.loading_data(path), bins=shape_of_grid,
                                    range=None, normed=False, weights=None)[0]
-    return C, U, amplitudes, structure, hist_probs, hist_data, jump_out, COV,\
-        densities
+    return C, U, amplitudes, structure, hist_probs, hist_data, jump_out,\
+        COV, densities
 
 
 def model_visualisation(H_probs, H_train, shape_of_grid):

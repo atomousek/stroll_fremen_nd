@@ -30,6 +30,7 @@ def time_space_positions(edge_of_square=0.05, timestep=300,
                                                             timeframe
             overall_sum number (np.float64 or np.int64), sum of all measures
             shape_of_grid
+            T numpy array shape_of_grid[0]x1, time positions of measured values
     uses: loading_data(), number_of_edges(), hist_params(),
           cartesian_product()
     objective: to find central positions of cels of grid
@@ -39,7 +40,7 @@ def time_space_positions(edge_of_square=0.05, timestep=300,
     central_points, time_frame_sums, overall_sum =\
         hist_params(data, shape_of_grid)
     return cartesian_product(*central_points), time_frame_sums, overall_sum,\
-        shape_of_grid
+        shape_of_grid, central_points[0]
 
 
 def hist_params(X, shape_of_grid):
@@ -58,10 +59,8 @@ def hist_params(X, shape_of_grid):
     histogram, edges = np.histogramdd(X, bins=shape_of_grid,
                                       range=None, normed=False, weights=None)
     central_points = []
-    edge = edges[0]
-    step_lenght = (edge[-1] - edge[0]) / len(edge)
     for i in range(len(edges)):
-        # step_lenght = (edges[i][-1] - edges[i][0]) / len(edges[i])
+        step_lenght = (edges[i][-1] - edges[i][0]) / len(edges[i])
         central_points.append(edges[i][0: -1] + step_lenght / 2)
     time_frame_sums = np.sum(histogram, axis=(1, 2))
     return central_points, time_frame_sums, np.sum(time_frame_sums)

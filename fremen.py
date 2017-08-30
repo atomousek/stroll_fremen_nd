@@ -68,6 +68,7 @@ def chosen_period(T, S, longest, shortest):
     """
     W = build_frequencies(longest, shortest)
     G = complex_numbers_batch(T, S, W)
+    print('amplitudy: ', np.absolute(G[1:]))
     P = max_influence(W, G)
     amplitude = np.max(np.absolute(G[1:]))
     return P, amplitude
@@ -82,12 +83,11 @@ def residues(time_frame_sums, time_frame_probs):
                                                             probabilities
                                                             over every
                                                             timeframe
-    output: T numpy array shape_of_grid[0]x1, time positions of measured values
-            S numpy array shape_of_grid[0]x1, sequence of measured values
+    output: S numpy array shape_of_grid[0]x1, sequence of measured values
     uses:
     objective: create dataset for fremen
     """
-    return np.arange(len(time_frame_sums)), time_frame_sums - time_frame_probs
+    return time_frame_sums - time_frame_probs
 
 
 

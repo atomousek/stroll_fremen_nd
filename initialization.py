@@ -4,8 +4,32 @@
 import numpy as np
 import clustering as cl
 import dataset_io as dio
-
+import grid
+import fremen as fm
 # for fremen
+
+
+def whole_initialization(path, k, edge_of_square, timestep, longest, shortest):
+    """
+    input:
+    output:
+    uses:
+    objective:
+    """
+    amplitudes = first_amplitudes()
+    structure = first_structure(path)
+    C, U = first_clustering(path, k, structure)
+    input_coordinates, time_frame_sums, overall_sum, shape_of_grid, T =\
+        grid.time_space_positions(edge_of_square, timestep, path)
+    time_frame_probs = first_time_frame_probs(overall_sum, shape_of_grid)
+    S = fm.residues(time_frame_sums, time_frame_probs)
+    print('soucet chyb: ', np.sum(np.abs(S)))
+    P, amplitude = fm.chosen_period(T, S, longest, shortest)
+    amplitudes.append(amplitude)
+    structure[1].append(4)  # konstantni polomer pro vsechny dimenze
+    structure[2].append(P)
+    return input_coordinates, overall_sum, structure, C,\
+        U, k, shape_of_grid, time_frame_sums, amplitudes, T
 
 
 def first_time_frame_probs(overall_sum, shape_of_grid):

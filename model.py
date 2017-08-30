@@ -61,7 +61,7 @@ def model_parameters(path, structure, C_old, U_old, k):
                                       method='prev_dim',  # initialization
                                       version='fuzzy',  # objective function
                                       fuzzyfier=2,  # weighting exponent
-                                      iterations=1000,
+                                      iterations=100,  # 1000
                                       C_in=C_old, U_in=U_old)
     COV = covariance_matrices(X, C, U, structure)
     return C, U, COV, densities
