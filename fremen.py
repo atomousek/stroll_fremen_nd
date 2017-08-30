@@ -87,7 +87,7 @@ def residues(time_frame_sums, time_frame_probs):
     uses:
     objective: create dataset for fremen
     """
-    return np.arrange(len(time_frame_sums)), time_frame_sums - time_frame_probs
+    return np.arange(len(time_frame_sums)), time_frame_sums - time_frame_probs
 
 
 

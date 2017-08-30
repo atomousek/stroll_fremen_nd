@@ -95,8 +95,8 @@ def initialization(X, k, method='random', C_in=0, U_in=0, structure=[1, []]):
     if method == 'random':
         n, d = np.shape(X)
         C = X[np.random.choice(np.arange(n), size=k, replace=False), :]
-        U = np.zeros((k, n))
-        D = distance_matrix(X, C, U, norm='L2')
+        U = np.random.rand(k, n)
+        D = distance_matrix(X, C, U, structure)[0]
         U = partition_matrix(D, version='fuzzy', fuzzyfier=2)
     elif method == 'old_C_U':
         C = C_in
@@ -104,7 +104,7 @@ def initialization(X, k, method='random', C_in=0, U_in=0, structure=[1, []]):
     elif method == 'prev_dim':
         # supposing that the algorith adds only one circle per iteration
         d = np.shape(X)[1]
-        C = np.empty(k, d)
+        C = np.empty((k, d))
         # known part of C
         d_in = np.shape(C_in)[1]
         C[:, : d_in] = C_in
@@ -147,7 +147,7 @@ def k_means(X, k, structure, method='random', version='fuzzy', fuzzyfier=2,
     """
     d = np.shape(X)[1]
     J_old = 0
-    C, U = initialization(X, k, method, C_in, U_in)
+    C, U = initialization(X, k, method, C_in, U_in, structure)
     for iteration in range(iterations):
         D, COV = distance_matrix(X, C, U, structure)
         U = partition_matrix(D, version, fuzzyfier)
@@ -162,6 +162,7 @@ def k_means(X, k, structure, method='random', version='fuzzy', fuzzyfier=2,
             print(J_new)
         J_old = J_new
     densities = np.sum(U, axis=1, keepdims=True) / np.sum(U)
+    print('leaving clustering')
     return C, U, COV, densities
 
 
@@ -177,19 +178,22 @@ def hypertime_substraction(X, Ci, structure):
     uses:
     objective: to substract C from X in hypertime
     """
-    XC = np.empty_like(X)
     # non-hypertime dimensions substraction
+    observations = np.shape(X)[0]
     dim = structure[0]
+    radii = structure[1]
+    XC = np.empty((observations, dim + len(radii)))
     XC[:, : dim] = X[:, : dim] - Ci[:, : dim]
     # hypertime dimensions substraction
-    radii = structure[1]
     for period in range(len(radii)):
-        dim = dim + period * 2
         r = radii[period]
-        XC[:, dim: dim + 2] = r * np.arccos(np.sum(X[:, dim: dim + 2] *
-                                                   Ci[:, dim: dim + 2],
-                                                   axis=1, keepdims=True) /
-                                            (r ** 2))
+        XC[:, dim + period: dim + period + 1] =\
+            r * np.arccos(np.sum(X[:, dim + (period * 2):
+                                   dim + (period * 2) + 2] *
+                                 Ci[:, dim + (period * 2):
+                                    dim + (period * 2) + 2],
+                                 axis=1, keepdims=True) /
+                          (r ** 2))
     return XC
 
 

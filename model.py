@@ -27,6 +27,7 @@ def model_fremen(input_coordinates, overall_sum, structure, path, C_old, U_old,
     output: hist_probs numpy array, 3D histogram of probabilities over grid
             C numpy array kxd, matrix of k d-dimensional cluster centres
             U numpy array kxn, matrix of weights
+            DODELAT!!!
     uses: model_parameters(), histogram_probs()
     objective: to create grid of probabilities over time-space
                and pass centres and weights to the next clusters initialization
@@ -35,7 +36,7 @@ def model_fremen(input_coordinates, overall_sum, structure, path, C_old, U_old,
     # toto budu muset nejak rozumne rozsekat (po 10^8 INPUT*k - zabere 4GB RAM)
     hist_probs = histogram_probs(input_coordinates, C, COV, densities,
                                  structure, k, shape_of_grid, overall_sum)
-    return hist_probs, C, U
+    return hist_probs, C, U, COV, densities
 
 
 def model_parameters(path, structure, C_old, U_old, k):
@@ -143,11 +144,11 @@ def iter_over_probs(input_coordinates, C, COV, densities, structure, k):
         start = i * length_of_part
         finish = (i + 1) * length_of_part - 1
         part = probabilities(input_coordinates[start: finish, :],
-                             C, COV, densities, structure)
+                             C, COV, densities, structure, k)
         probs[start: finish] = part
         gc.collect()
     part = probabilities(input_coordinates[finish:, :],
-                         C, COV, densities, structure)
+                         C, COV, densities, structure, k)
     probs[finish:] = part
     return probs
 
