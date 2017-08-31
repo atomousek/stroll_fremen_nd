@@ -35,8 +35,8 @@ importlib.reload(tst)
 ##########################
 
 # optional :)
-dio.load_numpy_array('k50_dva_cele_dny_C')
-dio.load_numpy_array('k50_dva_cele_dny_COV')
-dio.load_numpy_array('k50_dva_cele_dny_densities')
-dio.load_numpy_array('k50_dva_cele_dny_structure')
-dio.load_numpy_array('k50_dva_cele_dny_k')
+#dio.load_numpy_array('k50_dva_cele_dny_C')
+#dio.load_numpy_array('k50_dva_cele_dny_COV')
+#dio.load_numpy_array('k50_dva_cele_dny_densities')
+#dio.load_numpy_array('k50_dva_cele_dny_structure')
+#dio.load_numpy_array('k50_dva_cele_dny_k')

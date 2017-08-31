@@ -3,7 +3,7 @@
 
 import pandas as pd
 import numpy as np
-
+import pickle
 
 # for fremen
 
@@ -49,30 +49,73 @@ def create_X(data, structure):
 
 
 def save_numpy_array(variable, name, save_directory='/home/tom/projects/' +
-                     'atomousek/stroll_fremen_nd/output/arrays/'):
+                     'atomousek/stroll_fremen_nd/output/variables/'):
     """
     input: variable numpy array, some variable
            name string, name of the file
-           save_directory string, path to file, default 'arrays'
+           save_directory string, path to file, default 'variables'
     output: None
-    uses: pd.DataFrame(), pd.to_csv()
+    uses: np.save()
     objective: to save numpy array to csv
     """
-    pd.DataFrame(variable).to_csv(path_or_buf=save_directory + name + '.csv',
-                                  sep=' ', index=False, header=False)
+    if '.' in name:
+        parts = name.rsplit('.')
+        if parts[1] == '.npy':
+            name = parts[0]
+    np.save(save_directory + name + '.npy', variable)
 
 
-def load_numpy_array(name, save_directory='/home/tom/projects/' +
-                     'atomousek/stroll_fremen_nd/output/arrays/'):
+def load_numpy_array(name, load_directory='/home/tom/projects/' +
+                     'atomousek/stroll_fremen_nd/output/variables/'):
     """
     input: name string, name of the file
-           save_directory string, path to file, default 'arrays'
+           load_directory string, path to file, default 'variables'
     output: variable numpy array, loaded variable
-    uses: pd.read_csv(), pd.values()
-    objective: to save numpy array to csv
+    uses: np.load()
+    objective: to save numpy array
     """
-    df = pd.read_csv(save_directory, sep=' ', header=None, index_col=None)
-    return df.values
+    if '.' in name:
+        parts = name.rsplit('.')
+        if parts[1] == '.npy':
+            name = parts[0]
+    return np.load(load_directory + name + '.npy')
+
+
+def save_list(variable, name, save_directory='/home/tom/projects/' +
+              'atomousek/stroll_fremen_nd/output/variables/'):
+    """
+    input: variable numpy array, some variable
+           name string, name of the file
+           save_directory string, path to file, default 'variables'
+    output: None
+    uses: pickle.dump()
+    objective: to save list
+    """
+    if '.' in name:
+        parts = name.rsplit('.')
+        if parts[1] == '.lst':
+            name = parts[0]
+    with open(save_directory + name + '.lst', mode='wb') as myfile:
+        pickle.dump(variable, myfile)
+
+
+def load_list(name, load_directory='/home/tom/projects/' +
+              'atomousek/stroll_fremen_nd/output/variables/'):
+    """
+    input: name string, name of the file
+           load_directory string, path to file, default 'variables'
+    output: variable list (or int), loaded variable
+    uses: pickle.load()
+    objective: to load list
+    """
+    if '.' in name:
+        parts = name.rsplit('.')
+        if parts[1] == '.lst':
+            name = parts[0]
+    with open(load_directory + name + '.lst', mode='rb') as myfile:
+        return pickle.load(myfile)
+
+
 
 
 
