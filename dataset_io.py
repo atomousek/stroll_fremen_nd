@@ -48,6 +48,43 @@ def create_X(data, structure):
     return X
 
 
+def save_numpy_array(variable, name, save_directory='/home/tom/projects/' +
+                     'atomousek/stroll_fremen_nd/output/arrays/'):
+    """
+    input: variable numpy array, some variable
+           name string, name of the file
+           save_directory string, path to file, default 'arrays'
+    output: None
+    uses: pd.DataFrame(), pd.to_csv()
+    objective: to save numpy array to csv
+    """
+    pd.DataFrame(variable).to_csv(path_or_buf=save_directory + name + '.csv',
+                                  sep=' ', index=False, header=False)
+
+
+def load_numpy_array(name, save_directory='/home/tom/projects/' +
+                     'atomousek/stroll_fremen_nd/output/arrays/'):
+    """
+    input: name string, name of the file
+           save_directory string, path to file, default 'arrays'
+    output: variable numpy array, loaded variable
+    uses: pd.read_csv(), pd.values()
+    objective: to save numpy array to csv
+    """
+    df = pd.read_csv(save_directory, sep=' ', header=None, index_col=None)
+    return df.values
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 #

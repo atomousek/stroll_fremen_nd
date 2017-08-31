@@ -25,7 +25,7 @@ def method(longest, shortest, path, edge_of_square, timestep, k):
     """
     # initialization
     input_coordinates, overall_sum, structure, C,\
-        U, k, shape_of_grid, time_frame_sums, amplitudes, T =\
+        U, k, shape_of_grid, time_frame_sums, amplitudes, T, W =\
         init.whole_initialization(path, k, edge_of_square, timestep, longest,
                                   shortest)
     # iteration
@@ -34,24 +34,25 @@ def method(longest, shortest, path, edge_of_square, timestep, k):
     while jump_out == 0:
         start = clock()
         C, U, amplitudes, structure, hist_probs, hist_data, jump_out, COV,\
-            densities =\
+            densities, W =\
             iteration_step(longest, shortest, path,  # added by user
                            input_coordinates, overall_sum, structure, C,
-                           U, k, shape_of_grid, time_frame_sums, amplitudes, T)
+                           U, k, shape_of_grid, time_frame_sums, amplitudes, T, W)
         finish = clock()
+        print('structure: ', structure)
         iteration += 1
         print('iteration: ', iteration)
         print('processor time: ', finish - start)
     # some output
     print('iterations finished, visualisation started')
-    # model_visualisation(hist_probs, hist_data, shape_of_grid)
+    model_visualisation(hist_probs, hist_data, shape_of_grid)
     # pravdepodobne bych mel ty parametry modelu nekam ukladat
     return C, COV, densities, structure, k
 
 
 def iteration_step(longest, shortest, path,  # added by user
                    input_coordinates, overall_sum, structure, C_old,
-                   U_old, k, shape_of_grid, time_frame_sums, amplitudes, T):
+                   U_old, k, shape_of_grid, time_frame_sums, amplitudes, T, W):
     """
 #    input: X numpy array nxd, hyper space to analyze
 #           input_coordinates numpy array, coordinates for model creation
@@ -78,10 +79,13 @@ def iteration_step(longest, shortest, path,  # added by user
     time_frame_probs = np.sum(hist_probs, axis=(1, 2))
     S = fm.residues(time_frame_sums, time_frame_probs)
     print('soucet chyb: ', np.sum(np.abs(S)))
-    P, amplitude = fm.chosen_period(T, S, longest, shortest)
+    P, amplitude, W = fm.chosen_period(T, S, longest, shortest, W)
     # jaky je vztah mezi P a novou dimenzi? kde to vlastne resim? fuck!
     # mozna budu muset premodelovat "structure" a krom polomeru tam dat i delky
-    if len(amplitudes) < 11:  # hodne trapna podminka :)
+    if len(amplitudes) < 2:  # hodne trapna podminka :)
+#        if P in structure[2]:
+#            structure[1][structure[2].index(P)] = structure[1][structure[2].index(P)] * 2
+#        else:
         amplitudes.append(amplitude)
         structure[1].append(4)  # konstantni polomer pro vsechny dimenze
         structure[2].append(P)
@@ -97,7 +101,7 @@ def iteration_step(longest, shortest, path,  # added by user
         hist_data = np.histogramdd(dio.loading_data(path), bins=shape_of_grid,
                                    range=None, normed=False, weights=None)[0]
     return C, U, amplitudes, structure, hist_probs, hist_data, jump_out,\
-        COV, densities
+        COV, densities, W
 
 
 def model_visualisation(H_probs, H_train, shape_of_grid):
@@ -148,9 +152,18 @@ def model_visualisation(H_probs, H_train, shape_of_grid):
         plt.yticks([])
         # all together
         plt.tight_layout(pad=1.0, w_pad=1.0, h_pad=1.0)
-        # name the file
-        name = str(i)
+        # name the file, assuming hunderets of files
+        name = str(i / (3600 / shape_of_grid[0]))
         if len(name.split('.')[0]) == 1:
+            name = '0' + name
+        if len(name.split('.')[1]) == 1:
+            name = name + '0'
+        if len(name.split('.')[1]) > 2:
+            name = name.split('.')[0] + '.' + name.split('.')[1][:2]
+        name = str(i) + '.' + name
+        if len(name.split('.')[0]) == 1:
+            name = '0' + name
+        if len(name.split('.')[0]) == 2:
             name = '0' + name
         path = '/home/tom/projects/atomousek/stroll_fremen_nd/output/' +\
                'images/' + name + '.png'

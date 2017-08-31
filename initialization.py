@@ -24,12 +24,14 @@ def whole_initialization(path, k, edge_of_square, timestep, longest, shortest):
     time_frame_probs = first_time_frame_probs(overall_sum, shape_of_grid)
     S = fm.residues(time_frame_sums, time_frame_probs)
     print('soucet chyb: ', np.sum(np.abs(S)))
-    P, amplitude = fm.chosen_period(T, S, longest, shortest)
+    W = fm.build_frequencies(longest, shortest)
+    P, amplitude, W = fm.chosen_period(T, S, longest, shortest, W)
     amplitudes.append(amplitude)
     structure[1].append(4)  # konstantni polomer pro vsechny dimenze
     structure[2].append(P)
+    print('structure: ', structure)
     return input_coordinates, overall_sum, structure, C,\
-        U, k, shape_of_grid, time_frame_sums, amplitudes, T
+        U, k, shape_of_grid, time_frame_sums, amplitudes, T, W
 
 
 def first_time_frame_probs(overall_sum, shape_of_grid):

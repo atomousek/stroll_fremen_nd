@@ -45,14 +45,19 @@ def max_influence(W, G):
     objective: to find length of the most influential periodicity in default
                units
     """
-    influential_frequency = W[np.argmax(np.absolute(G[1:])) + 1]
+    maximum_position = np.argmax(np.absolute(G[1:])) + 1
+    # !
+    WW = list(W)
+    influential_frequency = WW.pop(maximum_position)
+    W = np.array(WW)
+    # !
     if influential_frequency == 0:
         return np.float64(0.0)
     else:
-        return 1 / influential_frequency
+        return 1 / influential_frequency, W
 
 
-def chosen_period(T, S, longest, shortest):
+def chosen_period(T, S, longest, shortest, W):
     """
     input: T numpy array Nx1, time positions of measured values
            S numpy array Nx1, sequence of measured values
@@ -66,12 +71,11 @@ def chosen_period(T, S, longest, shortest):
     uses:
     objective:
     """
-    W = build_frequencies(longest, shortest)
+    # W = build_frequencies(longest, shortest)
     G = complex_numbers_batch(T, S, W)
-    print('amplitudy: ', np.absolute(G[1:]))
-    P = max_influence(W, G)
+    P, W = max_influence(W, G)
     amplitude = np.max(np.absolute(G[1:]))
-    return P, amplitude
+    return P, amplitude, W
 
 
 def residues(time_frame_sums, time_frame_probs):

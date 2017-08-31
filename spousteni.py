@@ -27,32 +27,47 @@ importlib.reload(mdl)
 importlib.reload(tst)
 ##########################
 
-path = '/home/tom/projects/atomousek/stroll_fremen_nd/prvni_den.txt'
-longest = 60*60*12
-shortest = 60*15
+path = '/home/tom/projects/atomousek/stroll_fremen_nd/dva_cele_dny.txt'
+longest = 60*60*24*14
+shortest = 60*60
 edge_of_square = 0.05
 timestep = 300
-k = 3
+k = 50
 
 
 C, COV, densities, structure, k =\
     lrn.method(longest, shortest, path, edge_of_square, timestep, k)
 
 
+dio.save_numpy_array(C, 'k50_dva_cele_dny_C')
+dio.save_numpy_array(COV, 'k50_dva_cele_dny_COV')
+dio.save_numpy_array(densities, 'k50_dva_cele_dny_densities')
+dio.save_numpy_array(structure, 'k50_dva_cele_dny_structure')
+dio.save_numpy_array(k, 'k50_dva_cele_dny_k')
 
 
 
 
 
+dio.save_numpy_array(densities, 'k50_dva_cele_dny_densities')
+dio.save_numpy_array(structure, 'k50_dva_cele_dny_structure')
+dio.save_numpy_array(k, 'k50_dva_cele_dny_k')
 
 
+with open('/home/tom/projects/' +
+          'atomousek/stroll_fremen_nd/output/arrays/k50_dva_cele_dny_COV', 'w') as f:
+         f.write(str(COV))
 
 
+with open('/home/tom/projects/' +
+          'atomousek/stroll_fremen_nd/output/arrays/k50_dva_cele_dny_COV', 'r') as f:
+         print(f)
 
+a = open('/home/tom/projects/' +
+          'atomousek/stroll_fremen_nd/output/arrays/k50_dva_cele_dny_COV')
 
-
-
-
+a.read()
+a.close()
 
 
 

@@ -61,7 +61,7 @@ def model_parameters(path, structure, C_old, U_old, k):
                                       method='prev_dim',  # initialization
                                       version='fuzzy',  # objective function
                                       fuzzyfier=2,  # weighting exponent
-                                      iterations=100,  # 1000
+                                      iterations=1000,  # 1000
                                       C_in=C_old, U_in=U_old)
     COV = covariance_matrices(X, C, U, structure)
     return C, U, COV, densities
@@ -136,7 +136,7 @@ def iter_over_probs(input_coordinates, C, COV, densities, structure, k):
     """
     number_of_coordinates = np.shape(input_coordinates)[0]
     volume_of_data = number_of_coordinates * k
-    number_of_parts = (volume_of_data // (10 ** 8)) + 1
+    number_of_parts = (volume_of_data // (5 * 10 ** 7)) + 1
     length_of_part = number_of_coordinates // (number_of_parts)
     probs = np.empty(number_of_coordinates)
     finish = 0

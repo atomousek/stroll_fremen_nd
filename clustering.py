@@ -58,9 +58,9 @@ def partition_matrix(D, version='fuzzy', fuzzyfier=2):
         D = D / np.sum(D, axis=0, keepdims=True)
     elif version == 'probability':
         U = 1 / (D + np.exp(-100))
-        # U[D < 1.5] = 0.67  # zvazit...
-        U[D < 1] = 1
-        U[D > 16] = 0
+        U[D < 1.5] = 0.67  # zvazit...
+        # U[D < 1] = 1
+        U[D > 64] = 0
         D = np.empty_like(U)
         np.copyto(D, U)
     return D ** fuzzyfier
@@ -109,10 +109,11 @@ def initialization(X, k, method='random', C_in=0, U_in=0, structure=[1, []]):
         d_in = np.shape(C_in)[1]
         C[:, : d_in] = C_in
         # unknown part of C lying randomly (R) on the circle with radius r
-        R = np.random.rand(k, 1)
-        r = structure[1][-1]
-        C[:, d_in:] = np.c_[r * np.cos(2*np.pi * R),
-                            r * np.sin(2*np.pi * R)]
+        if d_in + 2 == d:
+            R = np.random.rand(k, 1)
+            r = structure[1][-1]
+            C[:, d_in:] = np.c_[r * np.cos(2*np.pi * R),
+                                r * np.sin(2*np.pi * R)]
         U = U_in
     else:
         print('unknown method of initialization, returning zeros!')
