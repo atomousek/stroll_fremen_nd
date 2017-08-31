@@ -13,7 +13,6 @@ import initialization as init
 import learning as lrn
 import model as mdl
 import testing as tst
-
 ###########################
 # only during developement
 import importlib
@@ -28,7 +27,7 @@ importlib.reload(tst)
 ##########################
 
 path = '/home/tom/projects/atomousek/stroll_fremen_nd/dva_cele_dny.txt'
-longest = 60*60*24*14
+longest = 60*60*48
 shortest = 60*60
 edge_of_square = 0.05
 timestep = 300
@@ -47,7 +46,7 @@ dio.save_list(structure, 'k50_dva_cele_dny_structure')
 dio.save_list(k, 'k50_dva_cele_dny_k')
 
 
-
+statistiky = tst.iteration_over_space(path, C, COV, densities, structure, k)
 
 
 

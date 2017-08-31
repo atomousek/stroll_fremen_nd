@@ -82,7 +82,7 @@ def iteration_step(longest, shortest, path,  # added by user
     P, amplitude, W = fm.chosen_period(T, S, longest, shortest, W)
     # jaky je vztah mezi P a novou dimenzi? kde to vlastne resim? fuck!
     # mozna budu muset premodelovat "structure" a krom polomeru tam dat i delky
-    if len(amplitudes) < 2:  # hodne trapna podminka :)
+    if len(amplitudes) < 1:  # hodne trapna podminka :)
 #        if P in structure[2]:
 #            structure[1][structure[2].index(P)] = structure[1][structure[2].index(P)] * 2
 #        else:
@@ -111,6 +111,7 @@ def model_visualisation(H_probs, H_train, shape_of_grid):
     uses:
     objective:
     """
+    hours_of_measurement = 48  # because of name
 #    H_probs = true_probabilities.reshape(shape_of_grid)
 #    H_train = training_data.reshape(shape_of_grid)
     random_values = np.random.rand(*shape_of_grid)
@@ -153,7 +154,7 @@ def model_visualisation(H_probs, H_train, shape_of_grid):
         # all together
         plt.tight_layout(pad=1.0, w_pad=1.0, h_pad=1.0)
         # name the file, assuming hunderets of files
-        name = str(i / (3600 / shape_of_grid[0]))
+        name = str(i / (shape_of_grid[0] / hours_of_measurement))
         if len(name.split('.')[0]) == 1:
             name = '0' + name
         if len(name.split('.')[1]) == 1:
