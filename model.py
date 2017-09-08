@@ -56,7 +56,7 @@ def model_parameters(path, structure, C_old, U_old, k):
     uses: dio.create_X(), cl.k_means(), covariance_matrices()
     objective: to find model parameters
     """
-    X = dio.create_X(dio.loading_data(path), structure)
+    X = dio.create_X(dio.loading_data(path), structure, verbose=True)
     # d = np.shape(X)[1]
     # kdyz neni vstupem predesla znalost stredu, nemuzu na ni navazovat
     try:
@@ -67,8 +67,8 @@ def model_parameters(path, structure, C_old, U_old, k):
     C, U, COV, densities = cl.k_means(X, k, structure,  # Gustafson–Kessel
                                       #method='prev_dim',  # initialization
                                       method=used_method,
-                                      version='fuzzy',  # weight calculation
-                                      fuzzyfier=2,  # weighting exponent
+                                      version='hard',  # weight calculation
+                                      fuzzyfier=1,  # weighting exponent
                                       iterations=100,  # 1000
                                       C_in=C_old, U_in=U_old)
     #
@@ -76,17 +76,17 @@ def model_parameters(path, structure, C_old, U_old, k):
     # densities = densities_normalization(U)
     return C, U, COV, densities
 
-
-def densities_normalization(D):
-    """
-    input:
-    output:
-    uses:
-    objective:
-    """
-    U = cl.partition_matrix(D, version='probability', fuzzyfier=1)
-    densities = np.sum(U, axis=1, keepdims=True) / np.sum(U)
-    return densities
+#
+#def densities_normalization(D):
+#    """
+#    input:
+#    output:
+#    uses:
+#    objective:
+#    """
+#    U = cl.partition_matrix(D, version='probability', fuzzyfier=1)
+#    densities = np.sum(U, axis=1, keepdims=True) / np.sum(U)
+#    return densities
 
 
 def covariance_matrices(X, C, U, structure):
@@ -233,7 +233,7 @@ def probabilities(data, C, COV, densities, structure, k):
           cl.partition_matrix()
     objective: to generate probabilities based on model above data
     """
-    X = dio.create_X(data, structure)
+    X = dio.create_X(data, structure, verbose=False)
     n, d = np.shape(X)
     # d = structure[0] + len(structure[1])
     gc.collect()
@@ -251,7 +251,7 @@ def probabilities(data, C, COV, densities, structure, k):
     gc.collect()
     U = densities * U
     gc.collect()
-    return np.sum(U, axis=0)
+    return np.sum(U, axis=0) ** 4
 
 
 

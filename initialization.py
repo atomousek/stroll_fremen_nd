@@ -28,7 +28,8 @@ def whole_initialization(path, k, edge_of_square, timestep, longest, shortest):
     print('vsechny periody: ', list(1/W[1:]))
     P, amplitude, W = fm.chosen_period(T, S, longest, shortest, W)
     amplitudes.append(amplitude)
-    structure[1].append(4)  # konstantni polomer pro vsechny dimenze
+#    structure[1].append(4)  # konstantni polomer pro vsechny dimenze
+    structure[1].append(4)  # pokus s velikostmi kruznic
     structure[2].append(P)
     print('structure: ', structure)
     return input_coordinates, overall_sum, structure, C,\
@@ -67,8 +68,8 @@ def first_clustering(path, k, structure):
     # d = np.shape(X)[1]
     C, U, COV, densities = cl.k_means(X, k, structure,  # Gustafson–Kessel
                                       method='random',  # initialization
-                                      version='fuzzy',  # objective function
-                                      fuzzyfier=2,  # weighting exponent
+                                      version='hard',  # objective function
+                                      fuzzyfier=1,  # weighting exponent
                                       iterations=200,
                                       C_in=0, U_in=0)
     return C, U

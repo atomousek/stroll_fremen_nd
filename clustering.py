@@ -7,7 +7,7 @@ import numpy as np
 # for fremen
 
 
-def distance_matrix(X, C, U, structure):
+def distance_matrix(X, C, U, structure, version):
     """
     input: X numpy array nxd, matrix of n d-dimensional observations
            C numpy array kxd, matrix of k d-dimensional cluster centres
@@ -24,67 +24,79 @@ def distance_matrix(X, C, U, structure):
     objective: to find difference between every observation and every
                center in every dimension
     """
-    k, n = np.shape(U)
-    D = []
-    COV = []
-    for cluster in range(k):
-        Ci = np.tile(C[cluster, :], (n, 1))
-        # hypertime version of X - Ci_nxd
-        XC = hypertime_substraction(X, Ci, structure)
-#        D.append(np.sum(XC ** 2, axis=1))
-#        if np.any(np.isnan(np.cov(XC, aweights=U[cluster, :], rowvar=False))):
-#            print('kovariance je nan, klastr je: ', cluster)
-#            print('toto je U[cluster, :]: ')
-#            print(U[cluster, :])
-#            print('soucet: ', np.sum(U[cluster, :]))
-#            print('maximum: ', np.max(U[cluster, :]))
-#            print('a toto je XC:')
-#            print(XC)
-#            print('nevazena kovariance: ')
-#            print(np.cov(XC, rowvar=False))
-#        if np.any(np.isinf(np.cov(XC, aweights=U[cluster, :], rowvar=False))):
-#            print('kovariance je inf, klastr je: ', cluster)
-#            print('toto je U[cluster, :]: ')
-#            print(U[cluster, :])
-#            print('soucet: ', np.sum(U[cluster, :]))
-#            print('maximum: ', np.max(U[cluster, :]))
-#            print('a toto je XC:')
-#            print(XC)
-#            print('nevazena kovariance: ')
-#            print(np.cov(XC, rowvar=False))
-#            # vznikne, kdyz je soucet a maximum stejna hodnota
-##            mala_cisla = np.random.rand(*np.shape(U[cluster, :])) * 1e-6
-#            V = np.cov(XC, aweights=U[cluster, :], ddof=0, rowvar=False)
-#            if np.any(np.isinf(V)):
-#                print('ddof=0 nepomohlo')
-#                print('soucet: ', np.sum(U[cluster, :] + mala_cisla))
-#                print('maximum: ', np.max(U[cluster, :] + mala_cisla))
-#                V = np.identity(len(np.cov(XC, rowvar=False)))
-#                print('pouzil jse jednotkovou matici jako kovarianci')
-#                print('vysledek bude k nicemu')
-#            else:
-#                print('prictei nizke hodnoty k U pomohlo')
-#        else:
-#            V = np.cov(XC, aweights=U[cluster, :], rowvar=False)
-        V = np.cov(XC, aweights=U[cluster, :], ddof=0, rowvar=False)
-        d = np.shape(V)[0]
-        determinant = test_det(V, d)
-        VD = V / (determinant)
-        VI = np.linalg.inv(VD)
-        D.append(np.sum(np.abs(np.dot(XC, VI) * XC), axis=1))  # !!!!np.abs(...)** (1 / d)
-        COV.append(VI)
-        gc.collect()
-    D = np.array(D)
-    COV = np.array(COV)
-    # COV je odsud nikoli seznam kovariancnich matic, ale seznam bodu,
-    # k nimz je shluk nejblize. Pak to pouziji na vypocet opravdove COV
-#    indices = np.argmin(D, axis=0)
-#    COV = np.zeros_like(D)
-#    COV[indices, np.arange(np.shape(D)[1])] = 1
-    # a ted je to fuzzy prirazeni
-#    COV = 1 / (D + np.exp(-100))
-#    COV = COV / np.sum(COV, axis=0, keepdims=True)
-#    COV = COV ** 2
+    if version != 'hard':
+        k, n = np.shape(U)
+        D = []
+        COV = []
+        for cluster in range(k):
+            Ci = np.tile(C[cluster, :], (n, 1))
+            # hypertime version of X - Ci_nxd
+            XC = hypertime_substraction(X, Ci, structure)
+    #        D.append(np.sum(XC ** 2, axis=1))
+    #        if np.any(np.isnan(np.cov(XC, aweights=U[cluster, :], rowvar=False))):
+    #            print('kovariance je nan, klastr je: ', cluster)
+    #            print('toto je U[cluster, :]: ')
+    #            print(U[cluster, :])
+    #            print('soucet: ', np.sum(U[cluster, :]))
+    #            print('maximum: ', np.max(U[cluster, :]))
+    #            print('a toto je XC:')
+    #            print(XC)
+    #            print('nevazena kovariance: ')
+    #            print(np.cov(XC, rowvar=False))
+    #        if np.any(np.isinf(np.cov(XC, aweights=U[cluster, :], rowvar=False))):
+    #            print('kovariance je inf, klastr je: ', cluster)
+    #            print('toto je U[cluster, :]: ')
+    #            print(U[cluster, :])
+    #            print('soucet: ', np.sum(U[cluster, :]))
+    #            print('maximum: ', np.max(U[cluster, :]))
+    #            print('a toto je XC:')
+    #            print(XC)
+    #            print('nevazena kovariance: ')
+    #            print(np.cov(XC, rowvar=False))
+    #            # vznikne, kdyz je soucet a maximum stejna hodnota
+    ##            mala_cisla = np.random.rand(*np.shape(U[cluster, :])) * 1e-6
+    #            V = np.cov(XC, aweights=U[cluster, :], ddof=0, rowvar=False)
+    #            if np.any(np.isinf(V)):
+    #                print('ddof=0 nepomohlo')
+    #                print('soucet: ', np.sum(U[cluster, :] + mala_cisla))
+    #                print('maximum: ', np.max(U[cluster, :] + mala_cisla))
+    #                V = np.identity(len(np.cov(XC, rowvar=False)))
+    #                print('pouzil jse jednotkovou matici jako kovarianci')
+    #                print('vysledek bude k nicemu')
+    #            else:
+    #                print('prictei nizke hodnoty k U pomohlo')
+    #        else:
+    #            V = np.cov(XC, aweights=U[cluster, :], rowvar=False)
+            V = np.cov(XC, aweights=U[cluster, :], ddof=0, rowvar=False)
+            d = np.shape(V)[0]
+            determinant = test_det(V, d)
+            VD = V / (determinant)
+            VI = np.linalg.inv(VD)
+            D.append(np.sum(np.abs(np.dot(XC, VI) * XC), axis=1))  # !!!!np.abs(...)** (1 / d)
+            COV.append(VI)
+            gc.collect()
+        D = np.array(D)
+        COV = np.array(COV)
+        # COV je odsud nikoli seznam kovariancnich matic, ale seznam bodu,
+        # k nimz je shluk nejblize. Pak to pouziji na vypocet opravdove COV
+    #    indices = np.argmin(D, axis=0)
+    #    COV = np.zeros_like(D)
+    #    COV[indices, np.arange(np.shape(D)[1])] = 1
+        # a ted je to fuzzy prirazeni
+    #    COV = 1 / (D + np.exp(-100))
+    #    COV = COV / np.sum(COV, axis=0, keepdims=True)
+    #    COV = COV ** 2
+    else:
+        k, n = np.shape(U)
+        D = []
+        COV = []
+        for cluster in range(k):
+            Ci = np.tile(C[cluster, :], (n, 1))
+            # hypertime version of X - Ci_nxd
+            XC = hypertime_substraction(X, Ci, structure)
+            D.append(np.sum(XC ** 2, axis=1))
+        D = np.array(D)
+        COV = np.array(COV)
     return D, COV
 
 
@@ -158,7 +170,7 @@ def new_centroids(X, U, k, d, fuzzyfier):
     return C
 
 
-def initialization(X, k, method, C_in, U_in, structure):
+def initialization(X, k, method, C_in, U_in, structure, version):
     """
     input: X numpy array nxd, matrix of n d-dimensional observations
            k positive integer, number of clusters
@@ -173,8 +185,8 @@ def initialization(X, k, method, C_in, U_in, structure):
         n, d = np.shape(X)
         C = X[np.random.choice(np.arange(n), size=k, replace=False), :]
         U = np.random.rand(k, n)
-        D = distance_matrix(X, C, U, structure)[0]
-        U = partition_matrix(D, version='fuzzy')
+        D = distance_matrix(X, C, U, structure, version)[0]
+        U = partition_matrix(D, version)
     elif method == 'old_C_U':
         C = C_in
         U = U_in
@@ -225,9 +237,9 @@ def k_means(X, k, structure, method, version, fuzzyfier,
     """
     d = np.shape(X)[1]
     J_old = 0
-    C, U = initialization(X, k, method, C_in, U_in, structure)
+    C, U = initialization(X, k, method, C_in, U_in, structure, version)
     for iteration in range(iterations):
-        D, COV = distance_matrix(X, C, U, structure)
+        D, COV = distance_matrix(X, C, U, structure, version)
         U = partition_matrix(D, version)  # !!!!
 #        C, U = new_centroids(X, U, k, d, fuzzyfier)
         C = new_centroids(X, U, k, d, fuzzyfier)

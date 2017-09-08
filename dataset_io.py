@@ -24,7 +24,7 @@ def loading_data(path):
     return df.values
 
 
-def create_X(data, structure):
+def create_X(data, structure, verbose):
     """
     input: path string, path to file
            structure list(int, list(floats)), number of non-hypertime
@@ -46,12 +46,13 @@ def create_X(data, structure):
                                    r * np.sin(data[:, 0] * 2 * np.pi / Lambda)]
         dim = dim + 2
     # jeste si tu udelam vystup, ktery mi rekne, jaka je variabilita dat
-    print('struktura prostoru: ', structure)
-    print('kovarincni matice dat ve vytvorenem prostoru:')
-    print(np.cov(X, ddof=0, rowvar=False))
-    print('kovarincni matice dat v rozumnem zobrazeni:')
-    XC = zobrazeni_do_rozumnych_souradnic(X, structure)
-    print(np.cov(XC, ddof=0, rowvar=False))
+    if verbose:
+        print('struktura prostoru: ', structure)
+        print('kovarincni matice dat ve vytvorenem prostoru:')
+        print(np.cov(X, ddof=0, rowvar=False))
+        print('kovarincni matice dat v rozumnem zobrazeni:')
+        XC = zobrazeni_do_rozumnych_souradnic(X, structure)
+        print(np.cov(XC, ddof=0, rowvar=False))
     return X
 
 

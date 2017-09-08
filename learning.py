@@ -97,13 +97,13 @@ def iteration_step(longest, shortest, path,  # added by user
     P, amplitude, W = fm.chosen_period(T, S, longest, shortest, W)
     # jaky je vztah mezi P a novou dimenzi? kde to vlastne resim? fuck!
     # mozna budu muset premodelovat "structure" a krom polomeru tam dat i delky
-    if len(amplitudes) < 3:  # hodne trapna podminka :)
+    if len(amplitudes) < 2:  # hodne trapna podminka :)
 #        if P in structure[2]:
 #            structure[1][structure[2].index(P)] = structure[1][structure[2].index(P)] * 2
 #        else:
         amplitudes.append(amplitude)
 #        structure[1].append(4)  # konstantni polomer pro vsechny dimenze
-        structure[1].append(4 * (len(amplitudes) + 1))  # pokus odvozeny od rovnomerneho rozdeleni
+        structure[1].append(1)  # pokus odvozeny od rovnomerneho rozdeleni
         structure[2].append(P)
         # trochu zbesile, ale nepotrebuji to k nicemu az na konci a je to
         # pravdepodobne dost velke
