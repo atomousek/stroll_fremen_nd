@@ -32,7 +32,7 @@ import model as mdl
 #importlib.reload(mdl)
 ##########################
 
-# optional :)
+## optional :)
 #C = dio.load_numpy_array('k50_dva_cele_dny_C')
 #COV = dio.load_numpy_array('k50_dva_cele_dny_COV')
 #densities = dio.load_numpy_array('k50_dva_cele_dny_densities')
@@ -40,61 +40,89 @@ import model as mdl
 #k = dio.load_list('k50_dva_cele_dny_k')
 
 
-def iteration_over_space(path, C, COV, densities, structure, k):
+def iteration_over_space(path, C, COV, densities, structure, k,
+                         edge_of_square, timestep, hours_of_measurement):
     """
     input:
     output:
     uses:
     objective:
     """
-    max_diff = 144
-    default_shape = np.int64(np.array([1, 1, 1]))
-    all_differences = []
-    for i in range(1, max_diff + 1):
-        start = clock()
-        shape_of_grid = default_shape * i
-        difference = model_measurement_differences(shape_of_grid, path, C, COV,
-                                                   densities, structure, k)
-        all_differences.append(difference)
-        finish = clock()
-        print('iteration: ', i)
-        print('processor time: ', finish - start)
-        print('actual difference: ', difference)
-    output = np.array(all_differences)
-    dio.save_numpy_array(output, 'k50_dva_cele_dny_differences')
-    return output
+    hist_probs, input_coordinates, shape_of_grid =\
+        histogram_of_probabilities(path, C, COV, densities, structure, k,
+                                   edge_of_square, timestep)
+    data = dio.loading_data(path)
+    prumer = np.ones_like(hist_probs) * len(data) / len(input_coordinates)
+    nula = np.zeros_like(hist_probs)
+    t_max = int(shape_of_grid[0])
+    x_max = int(shape_of_grid[1])
+    y_max = int(shape_of_grid[2])
+    differences = []
+    while min(t_max, x_max, y_max) >= 2:
+        t_max = int(t_max / 2)
+        x_max = int(x_max / 2)
+        y_max = int(y_max / 2)
+        model = np.histogramdd(input_coordinates, bins=[t_max, x_max, y_max],
+                               range=None, normed=False, weights=hist_probs)[0]
+        # !!! tady neni vyreseno, kdyz by ta data obsahovala hodnoty
+        realita = np.histogramdd(data, bins=[t_max, x_max, y_max],
+                                 range=None, normed=False, weights=None)[0]
+        nuly = np.histogramdd(input_coordinates, bins=[t_max, x_max, y_max],
+                                 range=None, normed=False, weights=nula)[0]
+        prumery = np.histogramdd(input_coordinates, bins=[t_max, x_max, y_max],
+                                 range=None, normed=False, weights=prumer)[0]
+        diff = np.sum(np.abs(realita - model))
+        if differences == []:
+            lrn.model_visualisation(model, realita, [t_max, x_max, y_max],
+                                    hours_of_measurement,
+                                    prefix='testing_data')
+        print('shape of grid: ', t_max, ' ', x_max, ' ', y_max)
+        print('realita minus model: ', diff)
+        print('realita minus nuly: ', np.sum(np.abs(realita - nuly)))
+        print('realita minus prumery: ', np.sum(np.abs(realita - prumery)))
+        differences.append(diff)
+    ### shape of grid by pak byla nejaka promenna...
+    return differences
 
 
-def model_measurement_differences(shape_of_grid, path, C, COV, densities,
-                                  structure, k):
+
+
+
+def histogram_of_probabilities(path, C, COV, densities,
+                               structure, k, edge_of_square, timestep):
     """
     input:
     output:
     uses:
     objective:
     """
-    input_coordinates, histogram, overall_sum, shape_of_grid =\
-        time_space_positions(shape_of_grid, path)
+    input_coordinates, overall_sum, shape_of_grid =\
+        time_space_positions(edge_of_square, timestep, path)
     hist_probs = histogram_probs(input_coordinates, C, COV, densities,
-                                 structure, k, shape_of_grid, overall_sum)
-    differences = histogram - hist_probs
-    print('sum of measurements: ', np.sum(np.abs(histogram)))
-    print('sum of probabilities: ', np.sum(np.abs(hist_probs)))
-    random = np.random.rand(*shape_of_grid)
-    random2 = random * overall_sum / np.sum(random)
-    print('random difference: ', np.sum(np.abs(histogram - random2)))
-    # maybe it would be good to see differences - we will see
-    return np.sum(np.abs(differences))
+                                 structure, k, overall_sum)
+#    differences = histogram - hist_probs
+#    print('sum of measurements: ', np.sum(np.abs(histogram)))
+#    print('sum of probabilities: ', np.sum(np.abs(hist_probs)))
+#    random = np.random.rand(*shape_of_grid)
+#    random2 = random * overall_sum / np.sum(random)
+#    print('random difference: ', np.sum(np.abs(histogram - random2)))
+#    # maybe it would be good to see differences - we will see
+#    return np.sum(np.abs(differences))
+    return hist_probs, input_coordinates, shape_of_grid
+
+##############################
 
 
-def time_space_positions(shape_of_grid, path):
+
+def time_space_positions(edge_of_square, timestep, path):
     """
-    input: shape_of_grid numpy array int64
+    input: edge_of_square float, spatial edge of cell in meters
+           timestep float, time edge of cell in seconds
            path string, path to file
     output: input_coordinates numpy array, coordinates for model creation
-            histogram numpy array shape_of_grid, sum of measures
+            time_frame_sums numpy array shape_of_grid[0]x1, sum of measures
                                                             over every
-                                                            cell
+                                                            timeframe
             overall_sum number (np.float64 or np.int64), sum of all measures
             shape_of_grid
             T numpy array shape_of_grid[0]x1, time positions of measured values
@@ -103,36 +131,76 @@ def time_space_positions(shape_of_grid, path):
     objective: to find central positions of cels of grid
     """
     data = dio.loading_data(path)
-    central_points, histogram, overall_sum =\
-        hist_params(data, shape_of_grid)
-    return grid.cartesian_product(*central_points), histogram,\
-        overall_sum, shape_of_grid
+    shape_of_grid = number_of_cells(data, edge_of_square, timestep)
+    central_points, overall_sum = hist_params(data, shape_of_grid)
+    input_coordinates = cartesian_product(*central_points)
+    return input_coordinates, overall_sum, shape_of_grid
 
 
-def hist_params(X, shape_of_grid):
+def hist_params(data, shape_of_grid):
     """
-    input: X numpy array nxd, matrix of measures
+    input: data numpy array nxd, matrix of measures
            shape_of_grid numpy array dx1 int64, number of cells in every
                                                 dimension
     output: central_points list (floats), central points of cells
-            histogram numpy array shape_of_grid, sum of measures
+            time_frame_sums numpy array shape_of_grid[0]x1, sum of measures
                                                             over every
-                                                            cell
+                                                            timeframe
             overall_sum number (np.float64 or np.int64), sum of all measures
     uses: np.histogramdd()
     objective: find central points of cells of grid
     """
-    histogram, edges = np.histogramdd(X, bins=shape_of_grid,
+    histogram, edges = np.histogramdd(data, bins=shape_of_grid,
                                       range=None, normed=False, weights=None)
     central_points = []
     for i in range(len(edges)):
         step_lenght = (edges[i][-1] - edges[i][0]) / len(edges[i])
         central_points.append(edges[i][0: -1] + step_lenght / 2)
-    return central_points, histogram, np.sum(histogram)
+    overall_sum = np.sum(histogram)
+    return central_points, overall_sum
+
+
+def number_of_cells(X, edge_of_square, timestep):
+    """
+    input: X numpy array nxd, matrix of measures
+           edge_of_square float, length of the edge of 2D part of a "cell"
+           timestep float, length of the time edge of a "cell"
+    output: shape_of_grid numpy array, number of edges on t, x, y, ... axis
+    uses:np.shape(), np.max(), np.min(),np.ceil(), np.int64()
+    objective: find out number of cells in every dimension
+    """
+    # number of predefined cubes in the measured space
+    n, d = np.shape(X)
+    number_of_cubes = [(np.max(X[:, 0]) - np.min(X[:, 0])) / timestep]
+    for i in range(1, d):
+        number_of_cubes.append((np.max(X[:, i]) - np.min(X[:, i])) /
+                               edge_of_square)
+    shape_of_grid = np.int64(np.ceil(number_of_cubes))
+    return shape_of_grid
+
+
+def cartesian_product(*arrays):
+    """
+    downloaded from:
+    'https://stackoverflow.com/questions/11144513/numpy-cartesian-product-of'+\
+    '-x-and-y-array-points-into-single-array-of-2d-points'
+    input: *arrays enumeration of central_points
+    output: numpy array (central positions of cels of grid)
+    uses: np.empty(),np.ix_(), np.reshape()
+    objective: to perform cartesian product of values in columns
+    """
+    la = len(arrays)
+    arr = np.empty([len(a) for a in arrays] + [la],
+                   dtype=arrays[0].dtype)
+    for i, a in enumerate(np.ix_(*arrays)):
+        arr[..., i] = a
+    return arr.reshape(-1, la)
+
+
 
 
 def histogram_probs(input_coordinates, C, COV, densities, structure, k,
-                    shape_of_grid, overall_sum):
+                    overall_sum):
     """
     input: input_coordinates numpy array, coordinates for model creation
            C numpy array kxd, matrix of k d-dimensional cluster centres
@@ -143,8 +211,6 @@ def histogram_probs(input_coordinates, C, COV, densities, structure, k,
                       number of non-hypertime dimensions, list of hypertime
                       radii nad list of wavelengths
            k positive integer, number of clusters
-           shape_of_grid numpy array dx1 int64, number of cells in every
-                                                dimension
            overall_sum number (np.float64 or np.int64), sum of all measures
     output: hist_probs numpy array, 3D histogram of probabilities over grid
     uses: iter_over_probs(), np.reshape()
@@ -152,42 +218,49 @@ def histogram_probs(input_coordinates, C, COV, densities, structure, k,
     """
     probs = mdl.iter_over_probs(input_coordinates, C, COV, densities,
                                 structure, k)
-    true_probs = probs * overall_sum / np.sum(probs)
-    return true_probs.reshape(shape_of_grid)
+    hist_probs = probs * overall_sum / np.sum(probs)
+    return hist_probs
 
 
 
 
 
 
+def test_model(hist_probs, hist_data):
+    """
+    input:
+    output:
+    uses:
+    objective:
+    """
+    t, x, y = np.shape(hist_data)
+    max_dividing = min(int(min(t, x, y) / 2), 50)
+    differences = []
+    for dividing in range(1, max_dividing):
+        start = clock()
+        lengths = np.int64(np.ceil(np.array([t, x, y]) / dividing))
+        difference = []
+        for part_t in range(dividing):
+            for part_x in range(dividing):
+                for part_y in range(dividing):
+                    difference.append(
+                        np.sum(
+                            hist_data[part_t * lengths[0]: (part_t + 1) * lengths[0],
+                                      part_x * lengths[1]: (part_x + 1) * lengths[1],
+                                      part_y * lengths[2]: (part_y + 1) * lengths[2]]
+                            ) - np.sum(
+                            hist_probs[part_t * lengths[0]: (part_t + 1) * lengths[0],
+                                      part_x * lengths[1]: (part_x + 1) * lengths[1],
+                                      part_y * lengths[2]: (part_y + 1) * lengths[2]]
+                                    )
+                                        )
+        rozdil = np.sum(np.abs(np.array(difference)))
+        finish = clock()
+        print('deleni: ', dividing, ' rozdil: ', rozdil, ' cas: ', finish - start)
+        differences.append(rozdil)
+    return differences
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+###############################################
 
 
 

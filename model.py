@@ -1,7 +1,7 @@
 # Created on Tue Jul 25 15:43:06 2017
 # @author: tom
 
-
+# fuzzyfier je funkce dimenze, takze jsem mu dal vstupni hodnotu 0
 import dataset_io as dio
 import clustering as cl
 import numpy as np
@@ -57,15 +57,36 @@ def model_parameters(path, structure, C_old, U_old, k):
     objective: to find model parameters
     """
     X = dio.create_X(dio.loading_data(path), structure)
+    # d = np.shape(X)[1]
+    # kdyz neni vstupem predesla znalost stredu, nemuzu na ni navazovat
+    try:
+        C_old == 0
+        used_method='random'
+    except ValueError:
+        used_method='prev_dim'
     C, U, COV, densities = cl.k_means(X, k, structure,  # Gustafson–Kessel
-                                      method='prev_dim',  # initialization
-                                      version='fuzzy',  # objective function
+                                      #method='prev_dim',  # initialization
+                                      method=used_method,
+                                      version='fuzzy',  # weight calculation
                                       fuzzyfier=2,  # weighting exponent
-                                      iterations=1000,  # 1000
+                                      iterations=100,  # 1000
                                       C_in=C_old, U_in=U_old)
-    # not sure, if thos is good idea
-    # COV = covariance_matrices(X, C, U, structure)
+    #
+    COV = covariance_matrices(X, C, U, structure)
+    # densities = densities_normalization(U)
     return C, U, COV, densities
+
+
+def densities_normalization(D):
+    """
+    input:
+    output:
+    uses:
+    objective:
+    """
+    U = cl.partition_matrix(D, version='probability', fuzzyfier=1)
+    densities = np.sum(U, axis=1, keepdims=True) / np.sum(U)
+    return densities
 
 
 def covariance_matrices(X, C, U, structure):
@@ -82,13 +103,53 @@ def covariance_matrices(X, C, U, structure):
     objective: to recalculate covariance matrices for model without using
                normalisation of cluster volumes
     """
+    # NEJSOU TU PORESENE VYJIMKY PRO COVARIANCI
     k, n = np.shape(U)
+    # vynuluji to, co ma blize jiny cluster
+    # U = U * U_hard
     COV = []
     for cluster in range(k):
         C_cluster = np.tile(C[cluster, :], (n, 1))
         # XC = X - C_grid  # METRIKA !!!
         XC = cl.hypertime_substraction(X, C_cluster, structure)
-        V = np.cov(XC, aweights=U[cluster, :], rowvar=False)
+#        if np.any(np.isnan(np.cov(XC, aweights=U[cluster, :], rowvar=False))):
+#            print('jsem ve fazi vytvareni nenormovane kovariancni matice')
+#            print('kovariance je nan, klastr je: ', cluster)
+#            print('toto je U[cluster, :]: ')
+#            print(U[cluster, :])
+#            print('soucet: ', np.sum(U[cluster, :]))
+#            print('maximum: ', np.max(U[cluster, :]))
+#            print('a toto je XC:')
+#            print(XC)
+#            print('nevazena kovariance: ')
+#            print(np.cov(XC, rowvar=False))
+#        if np.any(np.isinf(np.cov(XC, aweights=U[cluster, :], rowvar=False))):
+#            print('jsem ve fazi vytvareni nenormovane kovariancni matice')
+#            print('kovariance je inf, klastr je: ', cluster)
+#            print('toto je U[cluster, :]: ')
+#            print(U[cluster, :])
+#            print('soucet: ', np.sum(U[cluster, :]))
+#            print('maximum: ', np.max(U[cluster, :]))
+#            print('a toto je XC:')
+#            print(XC)
+#            print('nevazena kovariance: ')
+#            print(np.cov(XC, rowvar=False))
+#            # vznikne, kdyz je soucet a maximum stejna hodnota
+##            mala_cisla = np.random.rand(*np.shape(U[cluster, :])) * 1e-6
+#            V = np.cov(XC, aweights=U[cluster, :], ddof=0, rowvar=False)
+#            if np.any(np.isinf(V)):
+#                print('ddof=0 nepomohlo')
+#                print('soucet: ', np.sum(U[cluster, :] + mala_cisla))
+#                print('maximum: ', np.max(U[cluster, :] + mala_cisla))
+#                V = np.identity(len(np.cov(XC, rowvar=False)))
+#                print('pouzil jse jednotkovou matici jako kovarianci')
+#                print('vysledek bude k nicemu')
+#            else:
+#                print('prictei nizke hodnoty k U pomohlo')
+#        else:
+#            V = np.cov(XC, aweights=U[cluster, :], rowvar=False)
+#        V = np.cov(XC, aweights=U[cluster, :], rowvar=False)
+        V = np.cov(XC, aweights=U[cluster, :], ddof=0, rowvar=False)
         V = np.linalg.inv(V)
         COV.append(V)
     return np.array(COV)
@@ -173,7 +234,8 @@ def probabilities(data, C, COV, densities, structure, k):
     objective: to generate probabilities based on model above data
     """
     X = dio.create_X(data, structure)
-    n = np.shape(X)[0]
+    n, d = np.shape(X)
+    # d = structure[0] + len(structure[1])
     gc.collect()
     D = []
     for cluster in range(k):
@@ -185,11 +247,11 @@ def probabilities(data, C, COV, densities, structure, k):
         gc.collect()
     D = np.array(D)
     gc.collect()
-    D = cl.partition_matrix(D, version='probability', fuzzyfier=1)
+    U = cl.partition_matrix(D, version='model')
     gc.collect()
-    D = densities * D
+    U = densities * U
     gc.collect()
-    return np.sum(D, axis=0)
+    return np.sum(U, axis=0)
 
 
 

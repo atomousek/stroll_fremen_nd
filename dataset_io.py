@@ -45,6 +45,13 @@ def create_X(data, structure):
         X[:, dim: dim + 2] = np.c_[r * np.cos(data[:, 0] * 2 * np.pi / Lambda),
                                    r * np.sin(data[:, 0] * 2 * np.pi / Lambda)]
         dim = dim + 2
+    # jeste si tu udelam vystup, ktery mi rekne, jaka je variabilita dat
+    print('struktura prostoru: ', structure)
+    print('kovarincni matice dat ve vytvorenem prostoru:')
+    print(np.cov(X, ddof=0, rowvar=False))
+    print('kovarincni matice dat v rozumnem zobrazeni:')
+    XC = zobrazeni_do_rozumnych_souradnic(X, structure)
+    print(np.cov(XC, ddof=0, rowvar=False))
     return X
 
 
@@ -116,9 +123,49 @@ def load_list(name, load_directory='/home/tom/projects/' +
         return pickle.load(myfile)
 
 
+def zobrazeni_do_rozumnych_souradnic(X, structure):
+    Ci = create_zeros(structure)
+    observations = np.shape(X)[0]
+    ones = np.ones((observations, 1))
+    dim = structure[0]
+    radii = structure[1]
+    XC = np.empty((observations, dim + len(radii)))
+    XC[:, : dim] = X[:, : dim] - Ci[:, : dim]
+    # hypertime dimensions substraction
+    for period in range(len(radii)):
+        r = radii[period]
+        cos = (np.sum(X[:, dim + (period * 2): dim + (period * 2) + 2] *
+                      Ci[:, dim + (period * 2): dim + (period * 2) + 2],
+                      axis=1, keepdims=True) / (r ** 2))
+        cos = np.minimum(np.maximum(cos, ones * -1), ones)
+        XC[:, dim + period: dim + period + 1] = r * np.arccos(cos)
+    return XC
 
 
-
+def create_zeros(structure):
+    """
+    input: path string, path to file
+           structure list(int, list(floats)), number of non-hypertime
+                                              dimensions and list of hypertime
+                                              radii
+    output: X numpy array nxd, matrix of measures in hypertime
+    uses: loading_data(), np.empty(), np.c_[]
+    objective: to create X as a data in hypertime
+    """
+    # pouzivam puvodni funkci pro vytvoreni "pocatku souradnic" v pocatku dne
+    dim = structure[0]
+    radii = structure[1]
+    wavelengths = structure[2]
+    data = np.zeros((1, dim + len(radii)))
+    X = np.empty((1, dim + len(radii) * 2))
+    X[:, : dim] = data[:, 1: dim + 1]
+    for period in range(len(radii)):
+        r = radii[period]
+        Lambda = wavelengths[period]
+        X[:, dim: dim + 2] = np.c_[r * np.cos(data[:, 0] * 2 * np.pi / Lambda),
+                                   r * np.sin(data[:, 0] * 2 * np.pi / Lambda)]
+        dim = dim + 2
+    return X
 
 
 

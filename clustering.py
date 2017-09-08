@@ -19,7 +19,8 @@ def distance_matrix(X, C, U, structure):
             and every center
             COV numpy array kxdxd (?), matrix of cluster covariance
     uses: np.shape(), np.tile(), np.cov(), np.shape(), np.linalg.det(),
-          np.linalg.inv(), np.sum(), np.dot(), gc.collect(), np.array()
+          np.linalg.inv(), np.sum(), np.dot(), gc.collect(), np.array(),
+          test_det()
     objective: to find difference between every observation and every
                center in every dimension
     """
@@ -30,17 +31,64 @@ def distance_matrix(X, C, U, structure):
         Ci = np.tile(C[cluster, :], (n, 1))
         # hypertime version of X - Ci_nxd
         XC = hypertime_substraction(X, Ci, structure)
-        V = np.cov(XC, aweights=U[cluster, :], rowvar=False)
+#        D.append(np.sum(XC ** 2, axis=1))
+#        if np.any(np.isnan(np.cov(XC, aweights=U[cluster, :], rowvar=False))):
+#            print('kovariance je nan, klastr je: ', cluster)
+#            print('toto je U[cluster, :]: ')
+#            print(U[cluster, :])
+#            print('soucet: ', np.sum(U[cluster, :]))
+#            print('maximum: ', np.max(U[cluster, :]))
+#            print('a toto je XC:')
+#            print(XC)
+#            print('nevazena kovariance: ')
+#            print(np.cov(XC, rowvar=False))
+#        if np.any(np.isinf(np.cov(XC, aweights=U[cluster, :], rowvar=False))):
+#            print('kovariance je inf, klastr je: ', cluster)
+#            print('toto je U[cluster, :]: ')
+#            print(U[cluster, :])
+#            print('soucet: ', np.sum(U[cluster, :]))
+#            print('maximum: ', np.max(U[cluster, :]))
+#            print('a toto je XC:')
+#            print(XC)
+#            print('nevazena kovariance: ')
+#            print(np.cov(XC, rowvar=False))
+#            # vznikne, kdyz je soucet a maximum stejna hodnota
+##            mala_cisla = np.random.rand(*np.shape(U[cluster, :])) * 1e-6
+#            V = np.cov(XC, aweights=U[cluster, :], ddof=0, rowvar=False)
+#            if np.any(np.isinf(V)):
+#                print('ddof=0 nepomohlo')
+#                print('soucet: ', np.sum(U[cluster, :] + mala_cisla))
+#                print('maximum: ', np.max(U[cluster, :] + mala_cisla))
+#                V = np.identity(len(np.cov(XC, rowvar=False)))
+#                print('pouzil jse jednotkovou matici jako kovarianci')
+#                print('vysledek bude k nicemu')
+#            else:
+#                print('prictei nizke hodnoty k U pomohlo')
+#        else:
+#            V = np.cov(XC, aweights=U[cluster, :], rowvar=False)
+        V = np.cov(XC, aweights=U[cluster, :], ddof=0, rowvar=False)
         d = np.shape(V)[0]
-        VD = V / (np.linalg.det(V) ** (1 / d))
+        determinant = test_det(V, d)
+        VD = V / (determinant)
         VI = np.linalg.inv(VD)
-        D.append(np.sum(np.dot(XC, VI) * XC, axis=1))
+        D.append(np.sum(np.abs(np.dot(XC, VI) * XC), axis=1))  # !!!!np.abs(...)** (1 / d)
         COV.append(VI)
         gc.collect()
-    return np.array(D), np.array(COV)
+    D = np.array(D)
+    COV = np.array(COV)
+    # COV je odsud nikoli seznam kovariancnich matic, ale seznam bodu,
+    # k nimz je shluk nejblize. Pak to pouziji na vypocet opravdove COV
+#    indices = np.argmin(D, axis=0)
+#    COV = np.zeros_like(D)
+#    COV[indices, np.arange(np.shape(D)[1])] = 1
+    # a ted je to fuzzy prirazeni
+#    COV = 1 / (D + np.exp(-100))
+#    COV = COV / np.sum(COV, axis=0, keepdims=True)
+#    COV = COV ** 2
+    return D, COV
 
 
-def partition_matrix(D, version='fuzzy', fuzzyfier=2):
+def partition_matrix(D, version):
     """
     input: D numpy array kxn, matrix of distances between every observation
            and every center
@@ -54,19 +102,37 @@ def partition_matrix(D, version='fuzzy', fuzzyfier=2):
                                            calculation)
     """
     if version == 'fuzzy':
-        D = 1 / (D + np.exp(-100))
-        D = D / np.sum(D, axis=0, keepdims=True)
+        U = 1 / (D + np.exp(-100))
+        U = U / np.sum(U, axis=0, keepdims=True)
     elif version == 'probability':
         U = 1 / (D + np.exp(-100))
-        U[D < 1.5] = 0.67  # zvazit...
+        # U[D < 1.5] = 0.67  # zvazit...
         # U[D < 1] = 1
-        U[D > 64] = 0
-        D = np.empty_like(U)
-        np.copyto(D, U)
-    return D ** fuzzyfier
+        U[D < 1] = 1
+        U[D > 4] = 0
+        # U = U / np.sum(U, axis=0, keepdims=True)
+    elif version == 'model':
+        U = 1 / (D + np.exp(-100))
+        # U[D < 1.5] = 0.67  # zvazit...
+        # U[D < 1] = 1
+        U[D < 1] = 1
+        # U[D > 4] = np.exp(-100)
+        # U[D > 4] = 0
+    elif version == 'hard':
+        indices = np.argmin(D, axis=0)
+        U = np.zeros_like(D)
+        U[indices, np.arange(np.shape(D)[1])] = 1
+    elif version == 'tom':
+        V = 1 / (D + np.exp(-100))
+        V = V / np.sum(V, axis=0, keepdims=True)
+        indices = np.argmin(D, axis=0)
+        W = np.zeros_like(D)
+        W[indices, np.arange(np.shape(D)[1])] = 1
+        U = V * W
+    return U
 
 
-def new_centroids(X, U, k, d):
+def new_centroids(X, U, k, d, fuzzyfier):
     """
     input: U numpy array kxn, matrix of weights
            X numpy array nxd, matrix of n d-dimensional observations
@@ -74,14 +140,25 @@ def new_centroids(X, U, k, d):
     uses: np.zeros(), np.tile(), np.sum()
     objective: calculate new centroids
     """
+    U = U ** fuzzyfier
+    n = np.shape(X)[0]
     C = np.zeros((k, d))
     for centroid in range(k):
         U_part = np.tile(U[centroid, :], (d, 1)).T
+#        if np.all(np.sum(U_part, axis=0)) == 0:
+#            print('centrum: ', centroid)
+#            print('behem vypoctu centroidu jsou vsechny vahy nulove')
+#            # U_part = np.random.rand(*np.shape(U_part))
+#            U[centroid, :] = np.ones(n)
+#            C[centroid, :] = X[np.random.choice(np.arange(n), size=1, replace=False), :]
+#        else:
+#            C[centroid, :] = (np.sum(U_part * X, axis=0) / np.sum(U_part, axis=0))
+#    return C, U ** (1 / fuzzyfier)  # vraceni U je jen kvuli te chybe, pokud se nebude obevovat, muzeme to zrusit
         C[centroid, :] = (np.sum(U_part * X, axis=0) / np.sum(U_part, axis=0))
     return C
 
 
-def initialization(X, k, method='random', C_in=0, U_in=0, structure=[1, []]):
+def initialization(X, k, method, C_in, U_in, structure):
     """
     input: X numpy array nxd, matrix of n d-dimensional observations
            k positive integer, number of clusters
@@ -97,7 +174,7 @@ def initialization(X, k, method='random', C_in=0, U_in=0, structure=[1, []]):
         C = X[np.random.choice(np.arange(n), size=k, replace=False), :]
         U = np.random.rand(k, n)
         D = distance_matrix(X, C, U, structure)[0]
-        U = partition_matrix(D, version='fuzzy', fuzzyfier=2)
+        U = partition_matrix(D, version='fuzzy')
     elif method == 'old_C_U':
         C = C_in
         U = U_in
@@ -121,8 +198,8 @@ def initialization(X, k, method='random', C_in=0, U_in=0, structure=[1, []]):
     return C, U
 
 
-def k_means(X, k, structure, method='random', version='fuzzy', fuzzyfier=2,
-            iterations=100, C_in=0, U_in=0):
+def k_means(X, k, structure, method, version, fuzzyfier,
+            iterations, C_in, U_in):
     """
     input: X numpy array nxd, matrix of n d-dimensional observations
            k positive integer, number of clusters
@@ -151,8 +228,9 @@ def k_means(X, k, structure, method='random', version='fuzzy', fuzzyfier=2,
     C, U = initialization(X, k, method, C_in, U_in, structure)
     for iteration in range(iterations):
         D, COV = distance_matrix(X, C, U, structure)
-        U = partition_matrix(D, version, fuzzyfier)
-        C = new_centroids(X, U, k, d)
+        U = partition_matrix(D, version)  # !!!!
+#        C, U = new_centroids(X, U, k, d, fuzzyfier)
+        C = new_centroids(X, U, k, d, fuzzyfier)
         J_new = np.sum(U * D)
         if abs(J_old - J_new) < 0.01:
             print('no changes! breaking loop.')
@@ -163,6 +241,8 @@ def k_means(X, k, structure, method='random', version='fuzzy', fuzzyfier=2,
             print(J_new)
         J_old = J_new
     densities = np.sum(U, axis=1, keepdims=True) / np.sum(U)
+    print('iteration: ', iteration, ' and C:')
+    print(list(C))
     print('leaving clustering')
     return C, U, COV, densities
 
@@ -180,24 +260,39 @@ def hypertime_substraction(X, Ci, structure):
     objective: to substract C from X in hypertime
     """
     # non-hypertime dimensions substraction
-    observations = np.shape(X)[0]
-    dim = structure[0]
-    radii = structure[1]
-    XC = np.empty((observations, dim + len(radii)))
-    XC[:, : dim] = X[:, : dim] - Ci[:, : dim]
-    # hypertime dimensions substraction
-    for period in range(len(radii)):
-        r = radii[period]
-        XC[:, dim + period: dim + period + 1] =\
-            r * np.arccos(np.sum(X[:, dim + (period * 2):
-                                   dim + (period * 2) + 2] *
-                                 Ci[:, dim + (period * 2):
-                                    dim + (period * 2) + 2],
-                                 axis=1, keepdims=True) /
-                          (r ** 2))
+    XC = X - Ci
+#    observations = np.shape(X)[0]
+#    ones = np.ones((observations, 1))
+#    dim = structure[0]
+#    radii = structure[1]
+#    XC = np.empty((observations, dim + len(radii)))
+#    XC[:, : dim] = X[:, : dim] - Ci[:, : dim]
+#    # hypertime dimensions substraction
+#    for period in range(len(radii)):
+#        r = radii[period]
+#        cos = (np.sum(X[:, dim + (period * 2): dim + (period * 2) + 2] *
+#                      Ci[:, dim + (period * 2): dim + (period * 2) + 2],
+#                      axis=1, keepdims=True) / (r ** 2))
+#        cos = np.minimum(np.maximum(cos, ones * -1), ones)
+#        XC[:, dim + period: dim + period + 1] = r * np.arccos(cos)
     return XC
 
 
+def test_det(V, d):
+    determinant = np.linalg.det(V)
+    if np.linalg.det(V) < 0:
+        print('det(V) je zaporny')
+        print('norm det +: ', np.linalg.det(V / (np.abs(determinant) ** (1 / d))))
+        print('should be one')
+        determinant = (np.abs(determinant) ** (1 / d))
+    if np.any(np.isnan(V / (determinant ** (1 / d)))):
+        print('podil je nan:')
+        print('V je divne:')
+        print(V)
+        determinant = (1e-22) ** (1 / d)
+        print('norm det: ', np.linalg.det(V / (determinant ** (1 / d))))
+        print('should be one')
+    return determinant
 
 
 

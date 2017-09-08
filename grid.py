@@ -17,9 +17,7 @@ import dataset_io as dio
 # for fremen:
 
 
-def time_space_positions(edge_of_square=0.05, timestep=300,
-                         path='/home/tom/projects/atomousek/' +
-                         'stroll_fremen_nd/priklad.txt'):
+def time_space_positions(edge_of_square, timestep, path):
     """
     input: edge_of_square float, spatial edge of cell in meters
            timestep float, time edge of cell in seconds
@@ -66,7 +64,7 @@ def hist_params(X, shape_of_grid):
     return central_points, time_frame_sums, np.sum(time_frame_sums)
 
 
-def number_of_cells(X, edge_of_square=0.05, timestep=300):
+def number_of_cells(X, edge_of_square, timestep):
     """
     input: X numpy array nxd, matrix of measures
            edge_of_square float, length of the edge of 2D part of a "cell"

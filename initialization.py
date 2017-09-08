@@ -25,7 +25,7 @@ def whole_initialization(path, k, edge_of_square, timestep, longest, shortest):
     S = fm.residues(time_frame_sums, time_frame_probs)
     print('soucet chyb: ', np.sum(np.abs(S)))
     W = fm.build_frequencies(longest, shortest)
-    print('vsechny periody: ', list(1/W))
+    print('vsechny periody: ', list(1/W[1:]))
     P, amplitude, W = fm.chosen_period(T, S, longest, shortest, W)
     amplitudes.append(amplitude)
     structure[1].append(4)  # konstantni polomer pro vsechny dimenze
@@ -64,11 +64,12 @@ def first_clustering(path, k, structure):
     objective: to create C and U for clusters initialization in next iteration
     """
     X = dio.loading_data(path)[:, 1:]
+    # d = np.shape(X)[1]
     C, U, COV, densities = cl.k_means(X, k, structure,  # Gustafson–Kessel
                                       method='random',  # initialization
                                       version='fuzzy',  # objective function
                                       fuzzyfier=2,  # weighting exponent
-                                      iterations=1000,
+                                      iterations=200,
                                       C_in=0, U_in=0)
     return C, U
 

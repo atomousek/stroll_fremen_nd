@@ -34,6 +34,22 @@ import model
 #                                       sep=' ', index=False, header=False)
 #pd.DataFrame(df2.iloc[:, [0, 1, 2]]).to_csv('/home/tom/projects/atomousek/stroll_fremen_nd/druhy_den.txt',
 #                                       sep=' ', index=False, header=False)
+#import pandas as pd
+#df1 = pd.read_csv('/home/tom/projects/atomousek/stroll_fremen_nd/data/people_detections_2017_05_23.txt', sep=';', header=None, index_col=None)
+#df2 = pd.read_csv('/home/tom/projects/atomousek/stroll_fremen_nd/data/people_detections_2017_05_24.txt', sep=';', header=None, index_col=None)
+#df3 = pd.read_csv('/home/tom/projects/atomousek/stroll_fremen_nd/data/people_detections_2017_05_25.txt', sep=';', header=None, index_col=None)
+#df4 = pd.read_csv('/home/tom/projects/atomousek/stroll_fremen_nd/data/people_detections_2017_05_30.txt', sep=';', header=None, index_col=None)
+#df5 = pd.read_csv('/home/tom/projects/atomousek/stroll_fremen_nd/data/people_detections_2017_05_31.txt', sep=';', header=None, index_col=None)
+#df6 = pd.read_csv('/home/tom/projects/atomousek/stroll_fremen_nd/data/people_detections_2017_06_01.txt', sep=';', header=None, index_col=None)
+#df7 = pd.read_csv('/home/tom/projects/atomousek/stroll_fremen_nd/data/people_detections_2017_06_06.txt', sep=';', header=None, index_col=None)
+#df8 = pd.read_csv('/home/tom/projects/atomousek/stroll_fremen_nd/data/people_detections_2017_06_07.txt', sep=';', header=None, index_col=None)
+#df9 = pd.read_csv('/home/tom/projects/atomousek/stroll_fremen_nd/data/people_detections_2017_06_08.txt', sep=';', header=None, index_col=None)
+#df0 = pd.read_csv('/home/tom/projects/atomousek/stroll_fremen_nd/data/people_detections_2017_05_26.txt', sep=';', header=None, index_col=None)
+#df = pd.concat([df1, df2, df3, df4, df5, df6, df7, df8, df9], ignore_index=True)
+#pd.DataFrame(df.iloc[:, [0, 1, 2]]).to_csv('/home/tom/projects/atomousek/stroll_fremen_nd/tri_tydny.txt',
+#                                       sep=' ', index=False, header=False)
+#pd.DataFrame(df0.iloc[:, [0, 1, 2]]).to_csv('/home/tom/projects/atomousek/stroll_fremen_nd/kontrolni_patek.txt',
+#                                       sep=' ', index=False, header=False)
 
 
 # two days
