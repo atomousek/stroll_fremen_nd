@@ -41,7 +41,8 @@ import model as mdl
 
 
 def iteration_over_space(path, C, COV, densities, structure, k,
-                         edge_of_square, timestep, hours_of_measurement):
+                         edge_of_square, timestep, hours_of_measurement,
+                         prefix):
     """
     input:
     output:
@@ -75,7 +76,7 @@ def iteration_over_space(path, C, COV, densities, structure, k,
         if differences == []:
             lrn.model_visualisation(model, realita, [t_max, x_max, y_max],
                                     hours_of_measurement,
-                                    prefix='testing_data')
+                                    prefix)
         print('shape of grid: ', t_max, ' ', x_max, ' ', y_max)
         print('realita minus model: ', diff)
         print('realita minus nuly: ', np.sum(np.abs(realita - nuly)))
@@ -132,6 +133,7 @@ def time_space_positions(edge_of_square, timestep, path):
     """
     data = dio.loading_data(path)
     shape_of_grid = number_of_cells(data, edge_of_square, timestep)
+    print(shape_of_grid)
     central_points, overall_sum = hist_params(data, shape_of_grid)
     input_coordinates = cartesian_product(*central_points)
     return input_coordinates, overall_sum, shape_of_grid
@@ -216,8 +218,9 @@ def histogram_probs(input_coordinates, C, COV, densities, structure, k,
     uses: iter_over_probs(), np.reshape()
     objective: to create grid of probabilities over time-space
     """
+    # puvodni densities nejsou pouzivany
     probs = mdl.iter_over_probs(input_coordinates, C, COV, densities,
-                                structure, k)
+                                structure, k, dense_calc=densities)
     hist_probs = probs * overall_sum / np.sum(probs)
     return hist_probs
 

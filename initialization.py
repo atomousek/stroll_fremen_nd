@@ -29,7 +29,7 @@ def whole_initialization(path, k, edge_of_square, timestep, longest, shortest):
     P, amplitude, W = fm.chosen_period(T, S, longest, shortest, W)
     amplitudes.append(amplitude)
 #    structure[1].append(4)  # konstantni polomer pro vsechny dimenze
-    structure[1].append(4)  # pokus s velikostmi kruznic
+    structure[1].append(2)  # pokus s velikostmi kruznic
     structure[2].append(P)
     print('structure: ', structure)
     return input_coordinates, overall_sum, structure, C,\

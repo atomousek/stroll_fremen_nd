@@ -102,9 +102,9 @@ def iteration_step(longest, shortest, path,  # added by user
 #            structure[1][structure[2].index(P)] = structure[1][structure[2].index(P)] * 2
 #        else:
         amplitudes.append(amplitude)
-#        structure[1].append(4)  # konstantni polomer pro vsechny dimenze
-        structure[1].append(1)  # pokus odvozeny od rovnomerneho rozdeleni
         structure[2].append(P)
+#        structure[1].append(4)  # konstantni polomer pro vsechny dimenze
+        structure[1].append(structure[1][-1] * structure[2][-2] / structure[2][-1])  # pokus odvozeny od rovnomerneho rozdeleni
         # trochu zbesile, ale nepotrebuji to k nicemu az na konci a je to
         # pravdepodobne dost velke
         hist_probs = 0
@@ -139,8 +139,8 @@ def model_visualisation(H_probs, H_train, shape_of_grid, hours_of_measurement,
     for i in range(shape_of_grid[0]):
         # training data
         plt.subplot(221)
-        cmap = mpl.colors.ListedColormap(['white', 'blue', 'red'])
-        bounds = [-0.5, 0.5, 1.5, 3000]
+        cmap = mpl.colors.ListedColormap(['black', 'red', 'orange', 'pink', 'yellow', 'white', 'lightblue'])
+        bounds = [-0.5, 0.64, 1.28, 2.56, 5.12, 10.24, 20.48, 3000]
         norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
         img = plt.imshow(H_train[i, :, :], interpolation='nearest',
                          cmap=cmap, norm=norm)
@@ -148,8 +148,8 @@ def model_visualisation(H_probs, H_train, shape_of_grid, hours_of_measurement,
         plt.yticks([])
         # testing data
         plt.subplot(222)
-        cmap = mpl.colors.ListedColormap(['white', 'blue', 'red'])
-        bounds=[-0.5, 0.5, 1.5, 3000]
+        cmap = mpl.colors.ListedColormap(['black', 'red', 'orange', 'pink', 'yellow', 'white', 'lightblue'])
+        bounds=[-0.5, 0.64, 1.28, 2.56, 5.12, 10.24, 20.48, 3000]
         norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
         img = plt.imshow(H_test[i, :, :],interpolation='nearest',
                             cmap = cmap,norm=norm)
@@ -158,14 +158,14 @@ def model_visualisation(H_probs, H_train, shape_of_grid, hours_of_measurement,
         # model
         plt.subplot(212)
         cmap = mpl.colors.ListedColormap(['black', 'blue', 'purple', 'red',
-                                          'orange', 'pink', 'yellow', 'white'])
-        bounds=[-0.5, 0.001, 0.005, 0.01, 0.02, 0.04, 0.08, 0.16, 1]
+                                          'orange', 'pink', 'yellow', 'white', 'lightblue'])
+        bounds=[-0.5, 0.08, 0.32, 0.64, 1.28, 2.56, 5.12, 10.24, 20.48, 3000]
         norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
         img = plt.imshow(H_probs[i, :, :],interpolation='nearest',
                             cmap = cmap,norm=norm)
         plt.colorbar(img, cmap=cmap,
                      norm=norm, boundaries=bounds, 
-                     ticks=[0.001, 0.005, 0.01, 0.02, 0.04, 0.08, 0.16, 1],
+                     ticks=[0.08, 0.32, 0.64, 1.28, 2.56, 5.12, 10.24, 20.48, 3000],
                      fraction=0.046, pad=0.01)
         plt.xticks([])
         plt.yticks([])

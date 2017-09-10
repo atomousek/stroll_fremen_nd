@@ -94,7 +94,16 @@ def distance_matrix(X, C, U, structure, version):
             Ci = np.tile(C[cluster, :], (n, 1))
             # hypertime version of X - Ci_nxd
             XC = hypertime_substraction(X, Ci, structure)
-            D.append(np.sum(XC ** 2, axis=1))
+            # L2 metrika
+#            D.append(np.sum(XC ** 2, axis=1) ** 0.5)
+            # squared euclidean distance (usualy default
+#            D.append(np.sum(XC ** 2, axis=1))
+            # L1 metrika
+            D.append(np.sum(np.abs(XC), axis=1))
+            # squar rooted L1 metrika
+#            D.append(np.sum(np.abs(XC), axis=1) ** 0.5)
+            # L_nekonecno metrika
+#            D.append(np.max(np.abs(XC), axis=1))
         D = np.array(D)
         COV = np.array(COV)
     return D, COV
@@ -166,7 +175,12 @@ def new_centroids(X, U, k, d, fuzzyfier):
 #        else:
 #            C[centroid, :] = (np.sum(U_part * X, axis=0) / np.sum(U_part, axis=0))
 #    return C, U ** (1 / fuzzyfier)  # vraceni U je jen kvuli te chybe, pokud se nebude obevovat, muzeme to zrusit
+        # klasicky prumer
         C[centroid, :] = (np.sum(U_part * X, axis=0) / np.sum(U_part, axis=0))
+        # median misto prumeru - nefunkcni
+#        UU = U[centroid, :]
+#        vyber_bodu = X[UU == 1, :]
+#        C[centroid, :] = np.median(vyber_bodu)
     return C
 
 
@@ -252,9 +266,12 @@ def k_means(X, k, structure, method, version, fuzzyfier,
         if iteration % 10 == 0:
             print(J_new)
         J_old = J_new
-    densities = np.sum(U, axis=1, keepdims=True) / np.sum(U)
+#    densities = np.sum(U, axis=1, keepdims=True) / np.sum(U)
+    densities = np.sum(U, axis=1, keepdims=True)
     print('iteration: ', iteration, ' and C:')
     print(list(C))
+    print('and densities: ')
+    print(densities)
     print('leaving clustering')
     return C, U, COV, densities
 
@@ -271,8 +288,10 @@ def hypertime_substraction(X, Ci, structure):
     uses:
     objective: to substract C from X in hypertime
     """
-    # non-hypertime dimensions substraction
+    # classical difference
     XC = X - Ci
+    # cosine distance for hypertime and classical difference for space
+#    #non-hypertime dimensions substraction
 #    observations = np.shape(X)[0]
 #    ones = np.ones((observations, 1))
 #    dim = structure[0]

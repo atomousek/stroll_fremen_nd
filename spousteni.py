@@ -45,7 +45,7 @@ path_test = '/home/tom/projects/atomousek/stroll_fremen_nd/kontrolni_patek.txt'
 hours_of_measurement = 24
 statistics = tst.iteration_over_space(path_test, C, COV, densities, structure, k,
                                   edge_of_square, timestep,
-                                  hours_of_measurement)
+                                  hours_of_measurement, prefix='patek_testing_data')
 
 #
 #dio.save_list(statistics, 'k30timestep300edge0.05covariances')
@@ -59,11 +59,19 @@ statistics = tst.iteration_over_space(path_test, C, COV, densities, structure, k
 #
 
 
-## ctvrtek, cast ucicich dat (pro srovnani)
-#path_train = '/home/tom/projects/atomousek/stroll_fremen_nd/prvni_den.txt'
-#
-#statistics_train = tst.iteration_over_space(path_train, C, COV, densities, structure, k,
-#                                  edge_of_square, timestep)
+# ctvrtek, cast ucicich dat (pro srovnani)
+path_train = '/home/tom/projects/atomousek/stroll_fremen_nd/kontrolni_ctvrtek.txt'
+
+statistics_train = tst.iteration_over_space(path_train, C, COV, densities, structure, k,
+                                  edge_of_square, timestep,
+                                  hours_of_measurement, prefix='ctvrtek_training_data')
+
+# vymyslena sobota
+path_train = '/home/tom/projects/atomousek/stroll_fremen_nd/vymyslena_sobota.txt'
+
+statistics_train = tst.iteration_over_space(path_train, C, COV, densities, structure, k,
+                                  edge_of_square, timestep,
+                                  hours_of_measurement = 48, prefix='sobota_testing_data')
 
 
 
