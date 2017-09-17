@@ -60,7 +60,13 @@ def hist_params(X, shape_of_grid):
     for i in range(len(edges)):
         step_lenght = (edges[i][-1] - edges[i][0]) / len(edges[i])
         central_points.append(edges[i][0: -1] + step_lenght / 2)
-    time_frame_sums = np.sum(histogram, axis=(1, 2))
+    #############################################################
+    # FUNKCNI PRO 2d DATA !!!!
+    # time_frame_sums = np.sum(histogram, axis=(1, 2))
+    ##############################################################
+    # pravdepodobne funkcni pro 1+ dimensionalni data
+    osy = tuple(np.arange(len(np.shape(histogram)) - 1) + 1)
+    time_frame_sums = np.sum(histogram, axis=osy)
     return central_points, time_frame_sums, np.sum(time_frame_sums)
 
 

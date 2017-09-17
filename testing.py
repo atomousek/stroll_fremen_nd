@@ -40,6 +40,10 @@ import model as mdl
 #k = dio.load_list('k50_dva_cele_dny_k')
 
 
+
+
+
+
 def iteration_over_space(path, C, COV, densities, structure, k,
                          edge_of_square, timestep, hours_of_measurement,
                          prefix):
@@ -58,32 +62,71 @@ def iteration_over_space(path, C, COV, densities, structure, k,
     t_max = int(shape_of_grid[0])
     x_max = int(shape_of_grid[1])
     y_max = int(shape_of_grid[2])
-    differences = []
-    while min(t_max, x_max, y_max) >= 2:
+    with open('/home/tom/projects/atomousek/stroll_fremen_nd/output/variables/input_coordinates_' +
+                      str(t_max) + '_' + str(x_max) + '_' + str(y_max) +
+                      '.txt', 'w') as file1:
+                file1.write(str(list(input_coordinates.reshape(-1))))
+#    prvni_kolo = 1
+#    prvni_kolo = 0
+    diff_model = []
+    diff_nuly = []
+    diff_prumery = []
+    while t_max >= 2:
+        diff_m = []
+        diff_n = []
+        diff_p = []
+        x_max = int(shape_of_grid[1])
+        y_max = int(shape_of_grid[2])
+        while min(x_max, y_max) >= 2:
+            model, okraje = np.histogramdd(input_coordinates, bins=[t_max, x_max, y_max],
+                                   range=None, normed=False, weights=hist_probs)
+#            with open('/home/tom/projects/atomousek/stroll_fremen_nd/output/variables/values_' +
+#                      str(t_max) + '_' + str(x_max) + '_' + str(y_max) +
+#                      '.txt', 'w') as file1:
+#                file1.write(str(list(model.reshape(-1))))
+#            with open('/home/tom/projects/atomousek/stroll_fremen_nd/output/variables/edges_' +
+#                      str(t_max) + '_' + str(x_max) + '_' + str(y_max) +
+#                      '.txt', 'w') as file2:
+#                file2.write(str(list(okraje[0])))
+#                file2.write('\n')
+#                file2.write(str(list(okraje[1])))
+#                file2.write('\n')
+#                file2.write(str(list(okraje[2])))
+#                file2.write(str(list(souradnice(okraje))))
+            # !!! tady neni vyreseno, kdyz by ta data obsahovala hodnoty
+            realita = np.histogramdd(data, bins=[t_max, x_max, y_max],
+                                     range=None, normed=False, weights=None)[0]
+            nuly = np.histogramdd(input_coordinates, bins=[t_max, x_max, y_max],
+                                     range=None, normed=False, weights=nula)[0]
+            prumery = np.histogramdd(input_coordinates, bins=[t_max, x_max, y_max],
+                                     range=None, normed=False, weights=prumer)[0]
+#            diff = np.sum(np.abs(realita - model))
+            diff = (np.sum((realita - model) ** 2)) ** 0.5
+            chyba_prumeru = (np.sum((realita - prumery) ** 2)) ** 0.5
+#            if prvni_kolo == 1:
+            if t_max == 144 and x_max == 20:
+                model_visualisation(model, realita, [t_max, x_max, y_max],
+                                        hours_of_measurement,
+                                        prefix)
+#                prvni_kolo = 0
+            print('shape of grid: ', t_max, ' ', x_max, ' ', y_max)
+            print('realita minus model: ', diff)
+            print('realita minus nuly: ', np.sum(np.abs(realita - nuly)))
+            print('realita minus prumery: ', np.sum(np.abs(realita - prumery)))
+            print('chyba_prumeru: ', chyba_prumeru)
+            diff_m.append(diff)
+            diff_n.append(np.sum(np.abs(realita - nuly)))
+            diff_p.append(np.sum(np.abs(realita - prumery)))
+#            diff_n.append(np.sum((realita - nuly) ** 2))
+#            diff_p.append(np.sum((realita - prumery) ** 2))
+            x_max = int(x_max / 2)
+            y_max = int(y_max / 2)
         t_max = int(t_max / 2)
-        x_max = int(x_max / 2)
-        y_max = int(y_max / 2)
-        model = np.histogramdd(input_coordinates, bins=[t_max, x_max, y_max],
-                               range=None, normed=False, weights=hist_probs)[0]
-        # !!! tady neni vyreseno, kdyz by ta data obsahovala hodnoty
-        realita = np.histogramdd(data, bins=[t_max, x_max, y_max],
-                                 range=None, normed=False, weights=None)[0]
-        nuly = np.histogramdd(input_coordinates, bins=[t_max, x_max, y_max],
-                                 range=None, normed=False, weights=nula)[0]
-        prumery = np.histogramdd(input_coordinates, bins=[t_max, x_max, y_max],
-                                 range=None, normed=False, weights=prumer)[0]
-        diff = np.sum(np.abs(realita - model))
-        if differences == []:
-            lrn.model_visualisation(model, realita, [t_max, x_max, y_max],
-                                    hours_of_measurement,
-                                    prefix)
-        print('shape of grid: ', t_max, ' ', x_max, ' ', y_max)
-        print('realita minus model: ', diff)
-        print('realita minus nuly: ', np.sum(np.abs(realita - nuly)))
-        print('realita minus prumery: ', np.sum(np.abs(realita - prumery)))
-        differences.append(diff)
+        diff_model.append(diff_m)
+        diff_nuly.append(diff_n)
+        diff_prumery.append(diff_p)
     ### shape of grid by pak byla nejaka promenna...
-    return differences
+    return diff_model, diff_nuly, diff_prumery
 
 
 
@@ -221,8 +264,9 @@ def histogram_probs(input_coordinates, C, COV, densities, structure, k,
     # puvodni densities nejsou pouzivany
     probs = mdl.iter_over_probs(input_coordinates, C, COV, densities,
                                 structure, k, dense_calc=densities)
-    hist_probs = probs * overall_sum / np.sum(probs)
-    return hist_probs
+    # hist_probs = probs * overall_sum / np.sum(probs)
+    # return hist_probs
+    return probs
 
 
 
@@ -267,11 +311,115 @@ def test_model(hist_probs, hist_data):
 
 
 
+def souradnice(edges):
+    central_points = []
+    for i in range(len(edges)):
+        step_lenght = (edges[i][-1] - edges[i][0]) / len(edges[i])
+        central_points.append(edges[i][0: -1] + step_lenght / 2)
+    return cartesian_product(*central_points)
 
 
 
 
-
+def model_visualisation(H_probs, H_train, shape_of_grid, hours_of_measurement,
+                        prefix):
+    """
+    input:
+    output:
+    uses:
+    objective:
+    """
+    import matplotlib.pyplot as plt
+    import matplotlib as mpl
+    from scipy.misc import toimage
+    #hours_of_measurement = 24  # because of name
+#    H_probs = true_probabilities.reshape(shape_of_grid)
+#    H_train = training_data.reshape(shape_of_grid)
+#    random_values = np.random.rand(*shape_of_grid)
+#    H_test = (random_values < H_probs) * 1
+    # build pictures and save them
+    fig = plt.figure(dpi=100)#(dpi=100)#(dpi=400)
+    for i in range(shape_of_grid[0]):
+        # training data
+        plt.subplot(121)
+        # barevna verze
+#        cmap = mpl.colors.ListedColormap(['black', 'red', 'orange', 'pink', 'yellow', 'white', 'lightblue'])
+#        bounds = [-0.5, 0.64, 1.28, 2.56, 5.12, 10.24, 20.48, 99]
+#        norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
+#        img = plt.imshow(H_train[i, :, :], interpolation='nearest',
+#                         cmap=cmap, norm=norm)
+        # cernobila verze
+        bounds=[-0.5, 0.08, 0.32, 0.64, 1.28, 2.56, 5.12, 10.24, 20.48, 99]
+        norm = mpl.colors.BoundaryNorm(boundaries=bounds, ncolors=256)
+        img = plt.imshow(H_train[i, :, :],interpolation='nearest',
+                            cmap='Greys',norm=norm)
+        plt.xticks([0, 3, 6, 9, 12, 15, 18])
+        plt.yticks([0, 3, 6, 9, 12, 15, 18])
+        # testing data
+#        plt.subplot(222)
+#        cmap = mpl.colors.ListedColormap(['black', 'red', 'orange', 'pink', 'yellow', 'white', 'lightblue'])
+#        bounds=[-0.5, 0.64, 1.28, 2.56, 5.12, 10.24, 20.48, 3000]
+#        norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
+#        img = plt.imshow(H_test[i, :, :],interpolation='nearest',
+#                            cmap = cmap,norm=norm)
+#        plt.xticks([])
+#        plt.yticks([])
+        # model
+        plt.subplot(122)
+#        cmap = mpl.colors.ListedColormap(['black', 'blue', 'purple', 'red',
+#                                          'orange', 'pink', 'yellow', 'white', 'lightblue'])
+        bounds=[-0.5, 0.08, 0.32, 0.64, 1.28, 2.56, 5.12, 10.24, 20.48, 99]
+#        norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
+        norm = mpl.colors.BoundaryNorm(boundaries=bounds, ncolors=256)
+#        img = plt.imshow(H_probs[i, :, :],interpolation='nearest',
+#                            cmap = cmap,norm=norm)
+        img = plt.imshow(H_probs[i, :, :],interpolation='nearest',
+                            cmap='Greys',norm=norm)
+#        plt.colorbar(img, cmap=cmap,
+#                     norm=norm, boundaries=bounds, 
+#                     ticks=[0.08, 0.32, 0.64, 1.28, 2.56, 5.12, 10.24, 20.48, 99],
+#                     fraction=0.046, pad=0.01)
+        plt.colorbar(img, cmap='Greys',
+                     norm=norm, boundaries=bounds, 
+                     ticks=[0.08, 0.32, 0.64, 1.28, 2.56, 5.12, 10.24, 20.48, 99],
+                     fraction=0.046, pad=0.01)
+        plt.xticks([0, 3, 6, 9, 12, 15, 18])
+        plt.yticks([0, 3, 6, 9, 12, 15, 18])
+        # all together
+        plt.tight_layout(pad=1.0, w_pad=1.0, h_pad=1.0)
+        # name the file, assuming thousands of files
+        # firstly hours
+        times = i / (shape_of_grid[0] / hours_of_measurement)# + 13.3  # posunuti pro jedna data!!!
+        hours = times % 24
+        days = int(times / 24)
+        hours = str(hours)
+        days = str(days)
+        if len(hours.split('.')[0]) == 1:
+            hours = '0' + hours
+        if len(hours.split('.')[1]) == 1:
+            hours = hours + '0'
+        if len(hours.split('.')[1]) > 2:
+            hours = hours.split('.')[0] + '.' + hours.split('.')[1][:2]
+        if len(days.split('.')[0]) == 1:
+            days = '0' + days
+        name = str(i) + '.' + days + '.' + hours
+        if len(name.split('.')[0]) == 1:
+            name = '0' + name
+        if len(name.split('.')[0]) == 2:
+            name = '0' + name
+        if len(name.split('.')[0]) == 3:
+            name = '0' + name
+        name = prefix + name
+        path = '/home/tom/projects/atomousek/stroll_fremen_nd/output/' +\
+               'images/' + name + '.png'
+        fig.canvas.draw()
+        # really do not understand :) coppied from somewhere
+        data = np.fromstring(fig.canvas.tostring_rgb(), dtype=np.uint8, sep='')
+        data = data.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+        plt.clf()
+        # save
+        toimage(data).save(path)
+    plt.close(fig)
 
 
 

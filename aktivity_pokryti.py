@@ -52,6 +52,51 @@ import model
 #                                       sep=' ', index=False, header=False)
 
 
+#import pandas as pd
+#df1 = pd.read_csv('/home/tom/projects/atomousek/stroll_fremen_nd/data/people_detections_2017_05_23.txt', sep=';', header=None, index_col=None)
+#df2 = pd.read_csv('/home/tom/projects/atomousek/stroll_fremen_nd/data/people_detections_2017_05_24.txt', sep=';', header=None, index_col=None)
+#df3 = pd.read_csv('/home/tom/projects/atomousek/stroll_fremen_nd/data/people_detections_2017_05_25.txt', sep=';', header=None, index_col=None)
+#df4 = pd.read_csv('/home/tom/projects/atomousek/stroll_fremen_nd/data/people_detections_2017_05_30.txt', sep=';', header=None, index_col=None)
+#df5 = pd.read_csv('/home/tom/projects/atomousek/stroll_fremen_nd/data/people_detections_2017_05_31.txt', sep=';', header=None, index_col=None)
+#df6 = pd.read_csv('/home/tom/projects/atomousek/stroll_fremen_nd/data/people_detections_2017_06_01.txt', sep=';', header=None, index_col=None)
+#df7 = pd.read_csv('/home/tom/projects/atomousek/stroll_fremen_nd/data/people_detections_2017_06_06.txt', sep=';', header=None, index_col=None)
+#df8 = pd.read_csv('/home/tom/projects/atomousek/stroll_fremen_nd/data/people_detections_2017_06_07.txt', sep=';', header=None, index_col=None)
+#df9 = pd.read_csv('/home/tom/projects/atomousek/stroll_fremen_nd/data/people_detections_2017_06_08.txt', sep=';', header=None, index_col=None)
+#
+#df_train = pd.concat([df1, df2, df3, df4, df5, df6], ignore_index=True)
+#pd.DataFrame(df_train.iloc[:, [0, 1, 2]]).to_csv('/home/tom/projects/atomousek/stroll_fremen_nd/trenovaci_dva_tydny.txt',
+#                                       sep=' ', index=False, header=False)
+#df_test = pd.concat([df8, df9], ignore_index=True)
+#df_test = df_test.loc[(df_test[1] >=-8) & (df_test[1] <=12) & (df_test[2] >=-3) & (df_test[2] <=17), :]
+#pd.DataFrame(df_test.iloc[:, [0, 1, 2]]).to_csv('/home/tom/projects/atomousek/stroll_fremen_nd/testovaci_dva_dny.txt',
+#                                       sep=' ', index=False, header=False)
+
+
+#import pandas as pd
+#df1 = pd.read_csv('/home/tom/projects/atomousek/stroll_fremen_nd/binarni_data_dvere.txt', sep=' ', header=None, index_col=None)
+#df2 = df1.loc[df1[1] == 1, 0:0]
+#df3 = df1.loc[:, 0:0]
+#df4 = df1.loc[:, 1:1]
+#df5 = df1.loc[df1[1] == 0, 0:0]
+#df2.to_csv('/home/tom/projects/atomousek/stroll_fremen_nd/binarni_data_dvere_positives.txt',
+#                                       sep=' ', index=False, header=False)
+#df3.to_csv('/home/tom/projects/atomousek/stroll_fremen_nd/binarni_data_dvere_all_times.txt',
+#                                       sep=' ', index=False, header=False)
+#df4.to_csv('/home/tom/projects/atomousek/stroll_fremen_nd/binarni_data_dvere_all_values.txt',
+#                                       sep=' ', index=False, header=False)
+#df5.to_csv('/home/tom/projects/atomousek/stroll_fremen_nd/binarni_data_dvere_negatives.txt',
+#                                       sep=' ', index=False, header=False)
+
+
+#
+#import pandas as pd
+#df1 = pd.read_csv('/home/tom/projects/atomousek/stroll_fremen_nd/LabDoor2_LabDoor1.data', sep=' ', header=None, index_col=None)
+#df2 = df1.loc[df1[2] == 1, 0:1]
+#df2.to_csv('/home/tom/projects/atomousek/stroll_fremen_nd/casy_prujezdu.txt',
+#                                       sep=' ', index=False, header=False)
+#
+
+
 # two days
 grid.save_coordinates(edge_of_square=0.1, timestep=0.1,
                       data_file='/home/tom/projects/atomousek/' +

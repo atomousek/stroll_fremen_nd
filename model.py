@@ -328,17 +328,18 @@ def probabilities(data, C, COV, densities, structure, k, dense_calc):
         gc.collect()
     D = np.array(D)
     gc.collect()
-    U = cl.partition_matrix(D, version='model')
+    U = cl.partition_matrix(D, version='model')  # tady to bylo prehozene na fuzzy, proc??
+#    U = cl.partition_matrix(D, version='fuzzy')  # protoze jsem se o tom dohadovali s krajnasem :)
     gc.collect()
 #    # puvodni verze
 #    U = densities * U
 #    gc.collect()
 #    return np.sum(U, axis=0) ** 4
     if len(dense_calc) == 0:
-        U = U ** 4
+        U = U ** 2
         return np.sum(U, axis=1, keepdims=True)
     else:
-        U = (U ** 4) * dense_calc
+        U = (U ** 2) * dense_calc
         return np.sum(U, axis=0)
 
 

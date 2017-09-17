@@ -25,8 +25,8 @@ def whole_initialization(path, k, edge_of_square, timestep, longest, shortest):
     S = fm.residues(time_frame_sums, time_frame_probs)
     print('soucet chyb: ', np.sum(np.abs(S)))
     W = fm.build_frequencies(longest, shortest)
-    print('vsechny periody: ', list(1/W[1:]))
     P, amplitude, W = fm.chosen_period(T, S, longest, shortest, W)
+    print('vsechny periody (bez vybrane): ', list(1/W[1:]))
     amplitudes.append(amplitude)
 #    structure[1].append(4)  # konstantni polomer pro vsechny dimenze
     structure[1].append(2)  # pokus s velikostmi kruznic

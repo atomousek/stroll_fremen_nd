@@ -16,11 +16,11 @@ def loading_data(path):
     objective: load data from file (t, x, y, ...)
     """
     df = pd.read_csv(path, sep=' ', header=None, index_col=None)
-    dimension = len(df.columns)
-    observations = len(df)
-    if dimension == 1:
-        df[1] = np.arange(observations)
-        df.loc[:, ::-1]
+#    dimension = len(df.columns)
+#    observations = len(df)
+#    if dimension == 1:
+#        df[1] = np.arange(observations)
+#        df.loc[:, ::-1]
     return df.values
 
 
@@ -48,11 +48,11 @@ def create_X(data, structure, verbose):
     # jeste si tu udelam vystup, ktery mi rekne, jaka je variabilita dat
     if verbose:
         print('struktura prostoru: ', structure)
-        print('kovarincni matice dat ve vytvorenem prostoru:')
-        print(np.cov(X, ddof=0, rowvar=False))
-        print('kovarincni matice dat v rozumnem zobrazeni:')
-        XC = zobrazeni_do_rozumnych_souradnic(X, structure)
-        print(np.cov(XC, ddof=0, rowvar=False))
+#        print('kovarincni matice dat ve vytvorenem prostoru:')
+#        print(np.cov(X, ddof=0, rowvar=False))
+#        print('kovarincni matice dat v rozumnem zobrazeni:')
+#        XC = zobrazeni_do_rozumnych_souradnic(X, structure)
+#        print(np.cov(XC, ddof=0, rowvar=False))
     return X
 
 

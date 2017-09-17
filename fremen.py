@@ -46,7 +46,12 @@ def max_influence(W, G):
                units
     """
     maximum_position = np.argmax(np.absolute(G[1:])) + 1
+    print('pozice_vybraneho_W: ', maximum_position)
+    print('hodnota vybraneho 1/W: ', 1/W[maximum_position])
     # !
+#    GG = list(G)
+#    nejvetsi_komplexni_cislo = GG.pop(maximum_position)
+#    G = np.array(GG)
     WW = list(W)
     influential_frequency = WW.pop(maximum_position)
     W = np.array(WW)

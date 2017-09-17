@@ -39,7 +39,7 @@ def method(longest, shortest, path, edge_of_square, timestep, k,
         start = clock()
 #        C, U, amplitudes, structure, hist_probs, hist_data, jump_out, COV,\
 #            densities, W =\
-        structure, jump_out, C, U, COV, densities, hist_probs, hist_data =\
+        structure, jump_out, C, U, COV, densities, hist_probs, hist_data, W =\
             iteration_step(longest, shortest, path,  # added by user
                            input_coordinates, overall_sum, structure, C,
                            U, k, shape_of_grid, time_frame_sums, amplitudes, T, W)
@@ -91,10 +91,18 @@ def iteration_step(longest, shortest, path,  # added by user
     hist_probs, C, U, COV, densities =\
         mdl.model_fremen(input_coordinates, overall_sum,
                          structure, path, C_old, U_old, k, shape_of_grid)
-    time_frame_probs = np.sum(hist_probs, axis=(1, 2))
+    #############################################################
+    # FUNKCNI PRO 2d DATA !!!!
+    # time_frame_probs = np.sum(hist_probs, axis=(1, 2))
+    ##############################################################
+    # pravdepodobne funkcni pro 1+ dimensionalni data
+    osy = tuple(np.arange(len(np.shape(hist_probs)) - 1) + 1)
+    time_frame_probs = np.sum(hist_probs, axis=osy)
+    
     S = fm.residues(time_frame_sums, time_frame_probs)
     print('soucet chyb: ', np.sum(np.abs(S)))
     P, amplitude, W = fm.chosen_period(T, S, longest, shortest, W)
+    print('vsechny periody: ', list(1/W[1:]))
     # jaky je vztah mezi P a novou dimenzi? kde to vlastne resim? fuck!
     # mozna budu muset premodelovat "structure" a krom polomeru tam dat i delky
     if len(amplitudes) < 2:  # hodne trapna podminka :)
@@ -118,7 +126,7 @@ def iteration_step(longest, shortest, path,  # added by user
                                    range=None, normed=False, weights=None)[0]
 #    return C, U, amplitudes, structure, hist_probs, hist_data, jump_out,\
 #        COV, densities, W
-    return structure, jump_out, C, U, COV, densities, hist_probs, hist_data
+    return structure, jump_out, C, U, COV, densities, hist_probs, hist_data, W
 
 
 def model_visualisation(H_probs, H_train, shape_of_grid, hours_of_measurement,
@@ -140,7 +148,7 @@ def model_visualisation(H_probs, H_train, shape_of_grid, hours_of_measurement,
         # training data
         plt.subplot(221)
         cmap = mpl.colors.ListedColormap(['black', 'red', 'orange', 'pink', 'yellow', 'white', 'lightblue'])
-        bounds = [-0.5, 0.64, 1.28, 2.56, 5.12, 10.24, 20.48, 3000]
+        bounds = [-0.5, 0.64, 1.28, 2.56, 5.12, 10.24, 20.48, 99]
         norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
         img = plt.imshow(H_train[i, :, :], interpolation='nearest',
                          cmap=cmap, norm=norm)
@@ -159,13 +167,13 @@ def model_visualisation(H_probs, H_train, shape_of_grid, hours_of_measurement,
         plt.subplot(212)
         cmap = mpl.colors.ListedColormap(['black', 'blue', 'purple', 'red',
                                           'orange', 'pink', 'yellow', 'white', 'lightblue'])
-        bounds=[-0.5, 0.08, 0.32, 0.64, 1.28, 2.56, 5.12, 10.24, 20.48, 3000]
+        bounds=[-0.5, 0.08, 0.32, 0.64, 1.28, 2.56, 5.12, 10.24, 20.48, 99]
         norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
         img = plt.imshow(H_probs[i, :, :],interpolation='nearest',
                             cmap = cmap,norm=norm)
         plt.colorbar(img, cmap=cmap,
                      norm=norm, boundaries=bounds, 
-                     ticks=[0.08, 0.32, 0.64, 1.28, 2.56, 5.12, 10.24, 20.48, 3000],
+                     ticks=[0.08, 0.32, 0.64, 1.28, 2.56, 5.12, 10.24, 20.48, 99],
                      fraction=0.046, pad=0.01)
         plt.xticks([])
         plt.yticks([])
@@ -173,7 +181,7 @@ def model_visualisation(H_probs, H_train, shape_of_grid, hours_of_measurement,
         plt.tight_layout(pad=1.0, w_pad=1.0, h_pad=1.0)
         # name the file, assuming thousands of files
         # firstly hours
-        times = i / (shape_of_grid[0] / hours_of_measurement)
+        times = i / (shape_of_grid[0] / hours_of_measurement)# + 13.3  # posunuti pro jedna data!!!
         hours = times % 24
         days = int(times / 24)
         hours = str(hours)
