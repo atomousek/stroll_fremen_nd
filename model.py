@@ -74,7 +74,7 @@ def model_parameters(path, structure, C_old, U_old, k):
         used_method='random'
     except ValueError:
         used_method='prev_dim'
-    C, U, COV, densities = cl.k_means(X, k, structure,  # Gustafson–Kessel
+    C, U, densities = cl.k_means(X, k, structure,  # Gustafson–Kessel
                                       #method='prev_dim',  # initialization
                                       method=used_method,
                                       version='hard',  # weight calculation
@@ -117,7 +117,7 @@ def covariance_matrices(X, C, U, structure):
     k, n = np.shape(U)
     # vynuluji to, co ma blize jiny cluster
     # pure fuzzy W
-    D, COV = cl.distance_matrix(X, C, U, structure, version='hard')
+    D = cl.distance_matrix(X, C, U)
     W = cl.partition_matrix(D, version='fuzzy')
     # W with binary memberships from U
     W = W * U
@@ -130,8 +130,8 @@ def covariance_matrices(X, C, U, structure):
 #        C_cluster = np.tile(C_vyber_median, (n, 1))
         # klasicke prumerne C z k-means
         C_cluster = np.tile(C[cluster, :], (n, 1))
-        # XC = X - C_grid  # METRIKA !!!
-        XC = cl.hypertime_substraction(X, C_cluster, structure)
+        XC = X - C_cluster  # METRIKA !!!
+#        XC = cl.hypertime_substraction(X, C_cluster, structure)
 #        if np.any(np.isnan(np.cov(XC, aweights=U[cluster, :], rowvar=False))):
 #            print('jsem ve fazi vytvareni nenormovane kovariancni matice')
 #            print('kovariance je nan, klastr je: ', cluster)
@@ -321,8 +321,8 @@ def probabilities(data, C, COV, densities, structure, k, dense_calc):
     D = []
     for cluster in range(k):
         C_cluster = np.tile(C[cluster, :], (n, 1))
-        # XC = X - C_cluster  # METRIKA!!!!
-        XC = cl.hypertime_substraction(X, C_cluster, structure)
+        XC = X - C_cluster  # METRIKA!!!!
+#        XC = cl.hypertime_substraction(X, C_cluster, structure)
         VI = COV[cluster, :, :]
         D.append(np.sum(np.dot(XC, VI) * XC, axis=1))
         gc.collect()

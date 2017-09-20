@@ -71,13 +71,13 @@ def iteration_over_space(path, C, COV, densities, structure, k,
     diff_model = []
     diff_nuly = []
     diff_prumery = []
-    while t_max >= 2:
+    while t_max >= 576:#2:
         diff_m = []
         diff_n = []
         diff_p = []
         x_max = int(shape_of_grid[1])
         y_max = int(shape_of_grid[2])
-        while min(x_max, y_max) >= 2:
+        while min(x_max, y_max) >= 200:#2:
             model, okraje = np.histogramdd(input_coordinates, bins=[t_max, x_max, y_max],
                                    range=None, normed=False, weights=hist_probs)
 #            with open('/home/tom/projects/atomousek/stroll_fremen_nd/output/variables/values_' +
@@ -104,7 +104,7 @@ def iteration_over_space(path, C, COV, densities, structure, k,
             diff = (np.sum((realita - model) ** 2)) ** 0.5
             chyba_prumeru = (np.sum((realita - prumery) ** 2)) ** 0.5
 #            if prvni_kolo == 1:
-            if t_max == 144 and x_max == 20:
+            if t_max == 576 and x_max == 200:
                 model_visualisation(model, realita, [t_max, x_max, y_max],
                                         hours_of_measurement,
                                         prefix)
@@ -338,23 +338,29 @@ def model_visualisation(H_probs, H_train, shape_of_grid, hours_of_measurement,
 #    random_values = np.random.rand(*shape_of_grid)
 #    H_test = (random_values < H_probs) * 1
     # build pictures and save them
-    fig = plt.figure(dpi=100)#(dpi=100)#(dpi=400)
+    fig = plt.figure(dpi=200)#(dpi=100)#(dpi=400)
     for i in range(shape_of_grid[0]):
         # training data
         plt.subplot(121)
         # barevna verze
-#        cmap = mpl.colors.ListedColormap(['black', 'red', 'orange', 'pink', 'yellow', 'white', 'lightblue'])
-#        bounds = [-0.5, 0.64, 1.28, 2.56, 5.12, 10.24, 20.48, 99]
-#        norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
-#        img = plt.imshow(H_train[i, :, :], interpolation='nearest',
-#                         cmap=cmap, norm=norm)
+        cmap = mpl.colors.ListedColormap(['black', 'red', 'orange', 'pink', 'yellow', 'white', 'lightblue'])
+        bounds = [-0.5, 0.5, 1.5, 3.5, 10.5, 20.5, 50.5, 100.5]
+        norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
+        img = plt.imshow(H_train[i, :, :], interpolation='nearest',
+                         cmap=cmap, norm=norm)
+        plt.colorbar(img, cmap=cmap,
+                     norm=norm, boundaries=bounds, 
+                     ticks=[0.5, 1.5, 3.5, 10.5, 20.5, 50.5, 100.5],
+                     fraction=0.046, pad=0.01)
         # cernobila verze
-        bounds=[-0.5, 0.08, 0.32, 0.64, 1.28, 2.56, 5.12, 10.24, 20.48, 99]
-        norm = mpl.colors.BoundaryNorm(boundaries=bounds, ncolors=256)
-        img = plt.imshow(H_train[i, :, :],interpolation='nearest',
-                            cmap='Greys',norm=norm)
-        plt.xticks([0, 3, 6, 9, 12, 15, 18])
-        plt.yticks([0, 3, 6, 9, 12, 15, 18])
+#        bounds=[-0.5, 0.002, 0.005, 0.01, 0.02, 0.04, 0.08, 0.16, 0.32, 0.64, 1.28, 2.56, 5.12]
+#        norm = mpl.colors.BoundaryNorm(boundaries=bounds, ncolors=256)
+#        img = plt.imshow(H_train[i, :, :],interpolation='nearest',
+#                            cmap='Greys',norm=norm)
+#        plt.xticks([0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
+#        plt.yticks([0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
+        plt.xticks([0, 50, 100, 150, 200])
+        plt.yticks([0, 50, 100, 150, 200])
         # testing data
 #        plt.subplot(222)
 #        cmap = mpl.colors.ListedColormap(['black', 'red', 'orange', 'pink', 'yellow', 'white', 'lightblue'])
@@ -368,7 +374,8 @@ def model_visualisation(H_probs, H_train, shape_of_grid, hours_of_measurement,
         plt.subplot(122)
 #        cmap = mpl.colors.ListedColormap(['black', 'blue', 'purple', 'red',
 #                                          'orange', 'pink', 'yellow', 'white', 'lightblue'])
-        bounds=[-0.5, 0.08, 0.32, 0.64, 1.28, 2.56, 5.12, 10.24, 20.48, 99]
+        #bounds=[-0.5, 0.002, 0.005, 0.01, 0.02, 0.04, 0.08, 0.16, 0.32, 0.64, 1.28, 2.56, 5.12]
+        bounds = [-0.5, 0.001, 0.002, 0.004, 0.008, 0.016, 0.032, 0.064, 0.128, 0.265, 0.512, 1.024]
 #        norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
         norm = mpl.colors.BoundaryNorm(boundaries=bounds, ncolors=256)
 #        img = plt.imshow(H_probs[i, :, :],interpolation='nearest',
@@ -381,10 +388,14 @@ def model_visualisation(H_probs, H_train, shape_of_grid, hours_of_measurement,
 #                     fraction=0.046, pad=0.01)
         plt.colorbar(img, cmap='Greys',
                      norm=norm, boundaries=bounds, 
-                     ticks=[0.08, 0.32, 0.64, 1.28, 2.56, 5.12, 10.24, 20.48, 99],
+                     ticks=[-0.5, 0.001, 0.002, 0.004, 0.008, 0.016, 0.032, 0.064, 0.128, 0.265, 0.512, 1.024],
                      fraction=0.046, pad=0.01)
-        plt.xticks([0, 3, 6, 9, 12, 15, 18])
-        plt.yticks([0, 3, 6, 9, 12, 15, 18])
+#        plt.xticks([0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
+#        plt.yticks([0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
+#        plt.xticks([0, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200])
+#        plt.yticks([0, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200])
+        plt.xticks([0, 50, 100, 150, 200])
+        plt.yticks([0, 50, 100, 150, 200])
         # all together
         plt.tight_layout(pad=1.0, w_pad=1.0, h_pad=1.0)
         # name the file, assuming thousands of files

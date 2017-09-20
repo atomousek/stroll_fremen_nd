@@ -13,9 +13,9 @@ import initialization as init
 import learning as lrn
 import model as mdl
 import testing as tst
-import testing_0d as tst0
-import testing_0d_as_classes as tst0c
-import testing_1d as tst1
+#import testing_0d as tst0
+#import testing_0d_as_classes as tst0c
+#import testing_1d as tst1
 ###########################
 # only during developement
 import importlib
@@ -27,9 +27,9 @@ importlib.reload(init)
 importlib.reload(lrn)
 importlib.reload(mdl)
 importlib.reload(tst)
-importlib.reload(tst0)
-importlib.reload(tst0c)
-importlib.reload(tst1)
+#importlib.reload(tst0)
+#importlib.reload(tst0c)
+#importlib.reload(tst1)
 ##########################
 
 
@@ -41,9 +41,9 @@ path = '/home/tom/projects/atomousek/stroll_fremen_nd/trenovaci_dva_tydny.txt'
 # takhle byly vygenerovany matice pro porovnani (hypercasu 2, r dne 2)
 longest = 60*60*24*28
 shortest = 60*60*12
-edge_of_square = 0.15625*4#0.15625#1#0.2
-timestep = 60*60*0.1875*16#60*20#60*60*0.24
-k = 9
+edge_of_square = 1#0.1#1#0.15625*4#0.15625#1#0.2
+timestep = 60*60#60*5#60*20#60*60*0.1875*16#60*20#60*60*0.24
+k = 3#20
 hours_of_measurement = 24 * 14 # nepotrebne
 
 ## generovani peknych obrazku
@@ -59,13 +59,16 @@ C, COV, densities, structure, k =\
                hours_of_measurement)
 
 
-importlib.reload(tst)  # predelat testovani granularity
-# dva apul dne, testovaci data
-path_test = '/home/tom/projects/atomousek/stroll_fremen_nd/testovaci_dva_dny.txt'
-hours_of_measurement = 24*2
-diff_model_test, diff_nuly_test, diff_prumery_test = tst.iteration_over_space(path_test, C, COV, densities, structure, k,
-                                  edge_of_square, timestep,
-                                  hours_of_measurement, prefix='dva_dny_testing_data')
+
+#
+## testovani
+#importlib.reload(tst)  # predelat testovani granularity
+## dva apul dne, testovaci data
+#path_test = '/home/tom/projects/atomousek/stroll_fremen_nd/testovaci_dva_dny.txt'
+#hours_of_measurement = 24*2
+#diff_model_test, diff_nuly_test, diff_prumery_test = tst.iteration_over_space(path_test, C, COV, densities, structure, k,
+#                                  edge_of_square, timestep,
+#                                  hours_of_measurement, prefix='dva_dny_testing_data')
 
 #with open('/home/tom/projects/atomousek/stroll_fremen_nd/output/variables/statistics' +
 #                      '.txt', 'w') as file:

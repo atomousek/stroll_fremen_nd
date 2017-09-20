@@ -66,7 +66,7 @@ def first_clustering(path, k, structure):
     """
     X = dio.loading_data(path)[:, 1:]
     # d = np.shape(X)[1]
-    C, U, COV, densities = cl.k_means(X, k, structure,  # Gustafson–Kessel
+    C, U, densities = cl.k_means(X, k, structure,  # Gustafson–Kessel
                                       method='random',  # initialization
                                       version='hard',  # objective function
                                       fuzzyfier=1,  # weighting exponent
