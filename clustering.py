@@ -1,6 +1,45 @@
 # Created on Wed Aug 23 09:43:31 2017
 # @author: tom
-
+"""
+performs clustering of data
+call k_means(X, k, structure, method, version, fuzzyfier,
+             iterations, C_in, U_in)
+where
+input: X numpy array nxd, matrix of n d-dimensional observations
+       k positive integer, number of clusters
+       structure list(int, list(floats), list(floats)),
+                  number of non-hypertime dimensions, list of hypertime
+                  radii nad list of wavelengths
+       method string, defines type of initialization, possible ('random',
+                                                                'prev_dim')
+       version string, version of making weights (possible 'fuzzy',
+                                                  'model', 'hard')
+       fuzzyfier number, larger or equal one, not too large, usually 2 or 1
+       iterations integer, max number of iterations
+       C_in numpy array kxd, matrix of k d-dimensional cluster centres
+                             from the last iteration
+       U_in numpy array kxn, matrix of weights from the last iteration
+and
+output: C numpy array kxd, matrix of k d-dimensional cluster centres
+        U numpy array kxn, matrix of weights
+        densities numpy array kx1, matrix of number of
+                measurements belonging to every cluster
+especially
+random initialization: does not need C_in and U_in and there can be any value
+                       assigned
+                       return randomly chosen points from dataset X as centres
+prev_dim initialization: gets C_in as a known part of cluster centres and if it
+                         realizes, that two new dimensions has been added to
+                         the dataset, it randomly chooses points from
+                         the circle in them - based on the information
+                         in the variable structure
+fuzzy version: creates fuzzy partition matrix, recommended value for fuzzyfier
+               is 2
+hard version: creates crisp c-means partition matrix, recommended value for
+              fuzzyfier is 1
+model version: creates fuzzy partition matrix with values of weghts limited
+               to eaual or less than 1
+"""
 import numpy as np
 
 
@@ -79,11 +118,17 @@ def initialization(X, k, method, C_in, U_in, structure, version):
            C_in numpy array kxd, matrix of k d-dimensional cluster centres
                                  from the last iteration
            U_in numpy array kxn, matrix of weights from the last iteration
+           structure list(int, list(floats), list(floats)),
+                      number of non-hypertime dimensions, list of hypertime
+                      radii nad list of wavelengths
+           version string, version of making weights (possible 'fuzzy',
+                                                      'model', 'hard')
     output: C numpy array kxd, matrix of k d-dimensional cluster centres
             U numpy array kxn, matrix of weights
-    uses: np.shape(), np.random.randn(), np.sum(), np.zeros()
-            DODELAT!!!
-    objective: create initial centroids
+    uses: np.shape(), np.random.choice(), np.arange(), np.random.randn(),
+          np.shape(), np.empty(), np.c_[], np.cos(), np.sin(), np.zeros()
+          distance_matrix(), partition_matrix(), 
+    objective: create initial centroids and weights
     """
     if method == 'random':
         n, d = np.shape(X)
@@ -120,20 +165,21 @@ def k_means(X, k, structure, method, version, fuzzyfier,
                       number of non-hypertime dimensions, list of hypertime
                       radii nad list of wavelengths
            method string, defines type of initialization, possible ('random',
-                                                        'old_C_U', 'prev_dim')
+                                                                    'prev_dim')
            version string, version of making weights (possible 'fuzzy',
-           'probability')
-           fuzzyfier number, larger or equal one, not too large
+                                                      'model', 'hard')
+           fuzzyfier number, larger or equal one, not too large, usually 2 or 1
            iterations integer, max number of iterations
-           DODELAT!!!
+           C_in numpy array kxd, matrix of k d-dimensional cluster centres
+                                 from the last iteration
+           U_in numpy array kxn, matrix of weights from the last iteration
     output: C numpy array kxd, matrix of k d-dimensional cluster centres
             U numpy array kxn, matrix of weights
-            COV numpy array kxdxd, matrix of covariance matrices
             densities numpy array kx1, matrix of number of
                     measurements belonging to every cluster
     uses: np.shape(), np.sum(),
           initialization(), distance_matrix(), partition_matrix(),
-          new_centroids(), visualisation()
+          new_centroids()
     objective: perform some kind of k-means
     """
     d = np.shape(X)[1]
