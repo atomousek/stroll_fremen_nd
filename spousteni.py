@@ -44,7 +44,8 @@ shortest = 60*60*12
 edge_of_square = 1#0.1#1#0.15625*4#0.15625#1#0.2
 timestep = 60*60#60*5#60*20#60*60*0.1875*16#60*20#60*60*0.24
 k = 3#20
-hours_of_measurement = 24 * 14 # nepotrebne
+radius = 2
+number_of_periods = 5
 
 ## generovani peknych obrazku
 #longest = 60*60*24*28
@@ -54,9 +55,9 @@ hours_of_measurement = 24 * 14 # nepotrebne
 #k = 9
 #hours_of_measurement = 24 * 14 # nepotrebne
 
-C, COV, densities, structure, k =\
-    lrn.method(longest, shortest, path, edge_of_square, timestep, k,
-               hours_of_measurement)
+C, COV, density_integrals, structure =\
+    lrn.method(longest, shortest, path, edge_of_square, timestep, k, radius,
+               number_of_periods)
 
 
 

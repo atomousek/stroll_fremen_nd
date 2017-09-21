@@ -2,7 +2,32 @@
 # @author: tom
 
 """
+Creates grid above data and outputs central positions of cels of grid
+(input_coordinates), number of cells in every dimension (shape_of_grid),
+time positions based on the grid (T), numbers of measurements in
+timeframes (time_frame_sums) and number of measurements in all dataset
+(overall_sum).
+call time_space_positions(edge_of_square, timestep, path)
+where
+input: edge_of_square float, spatial edge of cell in default units (meters)
+       timestep float, time edge of cell in default units (seconds)
+       path string, path to file
+and
+output: input_coordinates numpy array, coordinates for model creation
+        time_frame_sums numpy array shape_of_grid[0]x1, sum of measures
+                                                        over every
+                                                        timeframe
+        overall_sum number (np.float64 or np.int64), sum of all measures
+        shape_of_grid numpy array dx1 int64, number of cells in every
+                                             dimension
+        T numpy array shape_of_grid[0]x1, time positions of timeframes
 
+timestep and edge_of_square has to be chosen based on desired granularity,
+timestep refers to the time variable,
+edge_of_square refers to other variables - it is supposed that the step
+    (edge of cell) in every variable other than time is equal.
+    If there are no other variables, some value has to be added but it is not
+    used.
 """
 
 import numpy as np
@@ -11,8 +36,8 @@ import dataset_io as dio
 
 def time_space_positions(edge_of_square, timestep, path):
     """
-    input: edge_of_square float, spatial edge of cell in meters
-           timestep float, time edge of cell in seconds
+    input: edge_of_square float, spatial edge of cell in default units (meters)
+           timestep float, time edge of cell in default units (seconds)
            path string, path to file
     output: input_coordinates numpy array, coordinates for model creation
             time_frame_sums numpy array shape_of_grid[0]x1, sum of measures
@@ -21,7 +46,7 @@ def time_space_positions(edge_of_square, timestep, path):
             overall_sum number (np.float64 or np.int64), sum of all measures
             shape_of_grid numpy array dx1 int64, number of cells in every
                                                  dimension
-            T numpy array shape_of_grid[0]x1, time positions of measured values
+            T numpy array shape_of_grid[0]x1, time positions of timeframes
     uses: loading_data(), number_of_edges(), hist_params(),
           cartesian_product()
     objective: to find central positions of cels of grid
@@ -46,7 +71,7 @@ def hist_params(X, shape_of_grid):
                                                             over every
                                                             timeframe
             overall_sum number (np.float64 or np.int64), sum of all measures
-    uses: np.histogramdd()
+    uses: np.histogramdd(), np.arange(), np.shape(),np.sum()
     objective: find central points of cells of grid
     """
     histogram, edges = np.histogramdd(X, bins=shape_of_grid,
@@ -55,14 +80,10 @@ def hist_params(X, shape_of_grid):
     for i in range(len(edges)):
         step_lenght = (edges[i][-1] - edges[i][0]) / len(edges[i])
         central_points.append(edges[i][0: -1] + step_lenght / 2)
-    #############################################################
-    # FUNKCNI PRO 2d DATA !!!!
-    # time_frame_sums = np.sum(histogram, axis=(1, 2))
-    ##############################################################
-    # pravdepodobne funkcni pro 1+ dimensionalni data
     osy = tuple(np.arange(len(np.shape(histogram)) - 1) + 1)
     time_frame_sums = np.sum(histogram, axis=osy)
-    return central_points, time_frame_sums, np.sum(time_frame_sums)
+    overall_sum = np.sum(time_frame_sums)
+    return central_points, time_frame_sums, overall_sum
 
 
 def number_of_cells(X, edge_of_square, timestep):
@@ -80,7 +101,8 @@ def number_of_cells(X, edge_of_square, timestep):
     for i in range(1, d):
         number_of_cubes.append((np.max(X[:, i]) - np.min(X[:, i])) /
                                edge_of_square)
-    return np.int64(np.ceil(number_of_cubes))
+    shape_of_grid = np.int64(np.ceil(number_of_cubes))
+    return shape_of_grid
 
 
 def cartesian_product(*arrays):

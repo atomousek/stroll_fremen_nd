@@ -21,7 +21,6 @@ input: T numpy array Nx1, time positions of measured values
 and
 output: P float64, length of the most influential frequency in default
         units
-        amplitude float64, max size of G
         W numpy array Lx1, sequence of reasonable frequencies without
                            the chosen one
         ES_new float64, squared sum of squares of residues from
@@ -39,6 +38,45 @@ It is necessary to understand what periodicities you are looking for (or what
 """
 
 import numpy as np
+
+
+def chosen_period(T, time_frame_sums, time_frame_probs, W, ES):
+    """
+    input: T numpy array Nx1, time positions of measured values
+           time_frame_sums numpy array shape_of_grid[0]x1, sum of measures
+                                                            over every
+                                                            timeframe
+           time_frame_probs numpy array shape_of_grid[0]x1, sum of
+                                                            probabilities
+                                                            over every
+                                                            timeframe
+           W numpy array Lx1, sequence of reasonable frequencies
+           ES float64, squared sum of squares of residues from the last
+                       iteration
+    output: P float64, length of the most influential frequency in default
+            units
+            W numpy array Lx1, sequence of reasonable frequencies without
+                               the chosen one
+            ES_new float64, squared sum of squares of residues from
+                            this iteration
+    uses: np.sum(), np.max(), np.absolute()
+          complex_numbers_batch(), max_influence()
+    objective: to choose the most influencing period in the timeseries, where
+               timeseries are the residues between reality and model
+    """
+    S = time_frame_sums - time_frame_probs
+    ES_new = (np.sum(S ** 2)) ** 0.5
+    print('squared sum of squares of residues: ', ES_new)
+    if ES == -1:
+        print('difference in errors: ', ES_new)
+    else:
+        dES = ES_new - ES
+        print('difference in errors: ', dES)
+        if dES > 0:
+            print('too many periodicities, choose less')
+    G = complex_numbers_batch(T, S, W)
+    P, W = max_influence(W, G)
+    return P, W, ES_new
 
 
 def build_frequencies(longest, shortest):
@@ -85,8 +123,6 @@ def max_influence(W, G):
                units and return changed list of frequencies
     """
     maximum_position = np.argmax(np.absolute(G[1:])) + 1
-    print('pozice_vybraneho_W: ', maximum_position)
-    print('hodnota vybraneho 1/W: ', 1/W[maximum_position])
     # ! probably not elegant way of changing W
     WW = list(W)
     influential_frequency = WW.pop(maximum_position)
@@ -97,44 +133,3 @@ def max_influence(W, G):
     else:
         P = 1 / influential_frequency
     return P, W
-
-
-def chosen_period(T, time_frame_sums, time_frame_probs, W, ES):
-    """
-    input: T numpy array Nx1, time positions of measured values
-           time_frame_sums numpy array shape_of_grid[0]x1, sum of measures
-                                                            over every
-                                                            timeframe
-           time_frame_probs numpy array shape_of_grid[0]x1, sum of
-                                                            probabilities
-                                                            over every
-                                                            timeframe
-           W numpy array Lx1, sequence of reasonable frequencies
-           ES float64, squared sum of squares of residues from the last
-                       iteration
-    output: P float64, length of the most influential frequency in default
-            units
-            amplitude float64, max size of G
-            W numpy array Lx1, sequence of reasonable frequencies without
-                               the chosen one
-            ES_new float64, squared sum of squares of residues from
-                            this iteration
-    uses: np.sum(), np.max(), np.absolute()
-          complex_numbers_batch(), max_influence()
-    objective: to choose the most influencing period in the timeseries, where
-               timeseries are the residues between reality and model
-    """
-    S = time_frame_sums - time_frame_probs
-    ES_new = (np.sum(S ** 2)) ** 0.5
-    print('squared sum of squares of residues: ', ES_new)
-    if ES == -1:
-        print('difference in errors: ', ES_new)
-    else:
-        dES = ES_new - ES
-        print('difference in errors: ', dES)
-        if dES > 0:
-            print('too many periodicities, choose less')
-    G = complex_numbers_batch(T, S, W)
-    P, W = max_influence(W, G)
-    amplitude = np.max(np.absolute(G[1:]))
-    return P, amplitude, W, ES_new

@@ -43,6 +43,57 @@ model version: creates fuzzy partition matrix with values of weghts limited
 import numpy as np
 
 
+def k_means(X, k, structure, method, version, fuzzyfier,
+            iterations, C_in, U_in):
+    """
+    input: X numpy array nxd, matrix of n d-dimensional observations
+           k positive integer, number of clusters
+           structure list(int, list(floats), list(floats)),
+                      number of non-hypertime dimensions, list of hypertime
+                      radii nad list of wavelengths
+           method string, defines type of initialization, possible ('random',
+                                                                    'prev_dim')
+           version string, version of making weights (possible 'fuzzy',
+                                                      'model', 'hard')
+           fuzzyfier number, larger or equal one, not too large, usually 2 or 1
+           iterations integer, max number of iterations
+           C_in numpy array kxd, matrix of k d-dimensional cluster centres
+                                 from the last iteration
+           U_in numpy array kxn, matrix of weights from the last iteration
+    output: C numpy array kxd, matrix of k d-dimensional cluster centres
+            U numpy array kxn, matrix of weights
+            densities numpy array kx1, matrix of number of
+                    measurements belonging to every cluster
+    uses: np.shape(), np.sum(),
+          initialization(), distance_matrix(), partition_matrix(),
+          new_centroids()
+    objective: perform some kind of k-means
+    """
+    print('starting clustering')
+    d = np.shape(X)[1]
+    J_old = 0
+    C, U = initialization(X, k, method, C_in, U_in, structure, version)
+    for iteration in range(iterations):
+        D = distance_matrix(X, C, U)
+        U = partition_matrix(D, version)
+        C = new_centroids(X, U, k, d, fuzzyfier)
+        J_new = np.sum(U * D)
+        if abs(J_old - J_new) < 0.01:
+            print('no changes! breaking loop.')
+            break
+        if iteration % 10 == 0:
+            print('iteration: ', iteration)
+        J_old = J_new
+    densities = np.sum(U, axis=1, keepdims=True)
+    print('number of clustering iteration: ', iteration)
+#    print('output centres:')
+#    print(list(C))
+#    print('and densities:')
+#    print(densities)
+    print('leaving clustering')
+    return C, U, densities
+
+
 def distance_matrix(X, C, U):
     """
     input: X numpy array nxd, matrix of n d-dimensional observations
@@ -154,54 +205,3 @@ def initialization(X, k, method, C_in, U_in, structure, version):
         print('unknown method of initialization, returning zeros!')
         C = np.zeros((k, d))
     return C, U
-
-
-def k_means(X, k, structure, method, version, fuzzyfier,
-            iterations, C_in, U_in):
-    """
-    input: X numpy array nxd, matrix of n d-dimensional observations
-           k positive integer, number of clusters
-           structure list(int, list(floats), list(floats)),
-                      number of non-hypertime dimensions, list of hypertime
-                      radii nad list of wavelengths
-           method string, defines type of initialization, possible ('random',
-                                                                    'prev_dim')
-           version string, version of making weights (possible 'fuzzy',
-                                                      'model', 'hard')
-           fuzzyfier number, larger or equal one, not too large, usually 2 or 1
-           iterations integer, max number of iterations
-           C_in numpy array kxd, matrix of k d-dimensional cluster centres
-                                 from the last iteration
-           U_in numpy array kxn, matrix of weights from the last iteration
-    output: C numpy array kxd, matrix of k d-dimensional cluster centres
-            U numpy array kxn, matrix of weights
-            densities numpy array kx1, matrix of number of
-                    measurements belonging to every cluster
-    uses: np.shape(), np.sum(),
-          initialization(), distance_matrix(), partition_matrix(),
-          new_centroids()
-    objective: perform some kind of k-means
-    """
-    d = np.shape(X)[1]
-    J_old = 0
-    C, U = initialization(X, k, method, C_in, U_in, structure, version)
-    for iteration in range(iterations):
-        D = distance_matrix(X, C, U)
-        U = partition_matrix(D, version)
-        C = new_centroids(X, U, k, d, fuzzyfier)
-        J_new = np.sum(U * D)
-        if abs(J_old - J_new) < 0.01:
-            print('no changes! breaking loop.')
-            print('iteration: ', iteration)
-            print(J_new)
-            break
-        if iteration % 10 == 0:
-            print(J_new)
-        J_old = J_new
-    densities = np.sum(U, axis=1, keepdims=True)
-    print('iteration: ', iteration, ' and C:')
-    print(list(C))
-    print('and densities: ')
-    print(densities)
-    print('leaving clustering')
-    return C, U, densities

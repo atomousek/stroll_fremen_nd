@@ -37,17 +37,17 @@ def model_fremen(input_coordinates, overall_sum, structure, path, C_old, U_old,
     # puvodni verze
 #    hist_probs = histogram_probs(input_coordinates, C, COV, densities,
 #                                 structure, k, shape_of_grid, overall_sum
-    grid_dense = histogram_probs(input_coordinates, C, COV, densities,
+    grid_densities = histogram_probs(input_coordinates, C, COV, densities,
                                  structure, k, shape_of_grid, overall_sum,
-                                 dense_calc=np.array([]))
-    dense_calc = densities / grid_dense
+                                 density_integrals=np.array([]))
+    density_integrals = densities / grid_densities
     hist_probs = histogram_probs(input_coordinates, C, COV, densities,
                                  structure, k, shape_of_grid, overall_sum,
-                                 dense_calc)
+                                 density_integrals)
     # puvodni verze
 #    return hist_probs, C, U, COV, densities
-    # !!! dense_calc je dost jina, nez densities, i kdyz ma stejny tvar
-    return hist_probs, C, U, COV, dense_calc
+    # !!! density_integrals je dost jina, nez densities, i kdyz ma stejny tvar
+    return hist_probs, C, U, COV, density_integrals
 
 def model_parameters(path, structure, C_old, U_old, k):
     """
@@ -196,7 +196,7 @@ def covariance_matrices(X, C, U, structure):
 
 
 def histogram_probs(input_coordinates, C, COV, densities, structure, k,
-                    shape_of_grid, overall_sum, dense_calc):
+                    shape_of_grid, overall_sum, density_integrals):
     """
     input: input_coordinates numpy array, coordinates for model creation
            C numpy array kxd, matrix of k d-dimensional cluster centres
@@ -216,22 +216,22 @@ def histogram_probs(input_coordinates, C, COV, densities, structure, k,
     """
     # puvodni verze
 #    probs = iter_over_probs(input_coordinates, C, COV, densities,
-#                                  structure, k, dense_calc)
+#                                  structure, k, density_integrals)
 #    true_probs = probs * overall_sum / np.sum(probs)
-    if len(dense_calc) == 0:
-        U_dense = iter_over_probs(input_coordinates, C, COV, densities,
-                                  structure, k, dense_calc)
-        return U_dense
+    if len(density_integrals) == 0:
+        grid_densities = iter_over_probs(input_coordinates, C, COV, densities,
+                                  structure, k, density_integrals)
+        return grid_densities
     else:
         hist_probs = iter_over_probs(input_coordinates, C, COV, densities,
-                                     structure, k, dense_calc)
+                                     structure, k, density_integrals)
         return hist_probs.reshape(shape_of_grid)
 #    # puvodni verze
 #    return true_probs.reshape(shape_of_grid)
 
 
 def iter_over_probs(input_coordinates, C, COV, densities, structure, k,
-                    dense_calc):
+                    density_integrals):
     """
     input: input_coordinates numpy array, coordinates for model creation
            C numpy array kxd, matrix of k d-dimensional cluster centres
@@ -259,44 +259,44 @@ def iter_over_probs(input_coordinates, C, COV, densities, structure, k,
 #        start = i * length_of_part
 #        finish = (i + 1) * length_of_part - 1
 #        part = probabilities(input_coordinates[start: finish, :],
-#                             C, COV, densities, structure, k, dense_calc)
+#                             C, COV, densities, structure, k, density_integrals)
 #        probs[start: finish] = part
 #        gc.collect()
 #    part = probabilities(input_coordinates[finish:, :],
-#                         C, COV, densities, structure, k, dense_calc)
+#                         C, COV, densities, structure, k, density_integrals)
 #    probs[finish:] = part
 #    return probs
-    U_dense = np.zeros((k, 1))
-    if len(dense_calc) == 0:
+    grid_densities = np.zeros((k, 1))
+    if len(density_integrals) == 0:
         for i in range(number_of_parts):
             start = i * length_of_part
             finish = (i + 1) * length_of_part - 1
             part = probabilities(input_coordinates[start: finish, :],
-                                 C, COV, densities, structure, k, dense_calc)
-            U_dense += part
+                                 C, COV, densities, structure, k, density_integrals)
+            grid_densities += part
             gc.collect()
         part = probabilities(input_coordinates[finish:, :],
-                             C, COV, densities, structure, k, dense_calc)
-        U_dense += part
+                             C, COV, densities, structure, k, density_integrals)
+        grid_densities += part
         print('grid densities: ')
-        print(U_dense)
-        return U_dense
+        print(grid_densities)
+        return grid_densities
     else:
         probs = np.empty(number_of_coordinates)
         for i in range(number_of_parts):
             start = i * length_of_part
             finish = (i + 1) * length_of_part - 1
             part = probabilities(input_coordinates[start: finish, :],
-                                 C, COV, densities, structure, k, dense_calc)
+                                 C, COV, densities, structure, k, density_integrals)
             probs[start: finish] = part
             gc.collect()
         part = probabilities(input_coordinates[finish:, :],
-                             C, COV, densities, structure, k, dense_calc)
+                             C, COV, densities, structure, k, density_integrals)
         probs[finish:] = part
         return probs
 
 
-def probabilities(data, C, COV, densities, structure, k, dense_calc):
+def probabilities(data, C, COV, densities, structure, k, density_integrals):
     """
     input: data numpy array, coordinates for model creation
            C numpy array kxd, matrix of k d-dimensional cluster centres
@@ -335,11 +335,11 @@ def probabilities(data, C, COV, densities, structure, k, dense_calc):
 #    U = densities * U
 #    gc.collect()
 #    return np.sum(U, axis=0) ** 4
-    if len(dense_calc) == 0:
+    if len(density_integrals) == 0:
         U = U ** 2
         return np.sum(U, axis=1, keepdims=True)
     else:
-        U = (U ** 2) * dense_calc
+        U = (U ** 2) * density_integrals
         return np.sum(U, axis=0)
 
 
