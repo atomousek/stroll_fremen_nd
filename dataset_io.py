@@ -1,38 +1,63 @@
 # Created on Fri Jun  2 13:52:33 2017
 # @author: tom
 
+"""
+There are two functions, the first loads data from file and the second
+transforms these data to the requested space-hypertime. other functions were
+built only for testing.
+
+loading_data(path):
+loads data from file on adress 'path' of structure (t, x, y, ...),
+    the first dimension (variable, column) is understood as a time,
+    others are measured variables in corresponding time.
+    If there is only one column in the dataset, it is understood as positive
+    occurences in measured times. Expected separator between values is SPACE
+    (' ').
+
+create_X(data, structure): create X from a loaded data as a data in hypertime,
+                           where the structure of a space is derived from
+                           the varibale structure
+where
+input: data numpy array nxd*, matrix of measures IRL, where d* is number
+       of measured variables
+       structure list(int, list(floats), list(floats)),
+                      number of non-hypertime dimensions, list of hypertime
+                      radii nad list of wavelengths
+and
+output: X numpy array nxd, matrix of measures in hypertime
+"""
+
 import pandas as pd
 import numpy as np
 import pickle
-
-# for fremen
 
 
 def loading_data(path):
     """
     input: path string, path to file
     output: data numpy array nxd*, matrix of measures IRL
-    uses: pd.read_csv(), pd.columns(), np.arange(), pd.values(), pd.loc[]
-    objective: load data from file (t, x, y, ...)
+    uses: pd.read_csv(), pd.values()
+    objective: load data from file (t, x, y, ...), the first dimension
+               (variable, column) is understood as a time, others are measured
+               variables in corresponding time. If there is only one column
+               in the dataset, it is understood as positive occurences in
+               measured times. Expected separator between values is SPACE(' ').
     """
     df = pd.read_csv(path, sep=' ', header=None, index_col=None)
-#    dimension = len(df.columns)
-#    observations = len(df)
-#    if dimension == 1:
-#        df[1] = np.arange(observations)
-#        df.loc[:, ::-1]
     return df.values
 
 
-def create_X(data, structure, verbose):
+def create_X(data, structure):
     """
-    input: path string, path to file
-           structure list(int, list(floats)), number of non-hypertime
-                                              dimensions and list of hypertime
-                                              radii
+    input: data numpy array nxd*, matrix of measures IRL, where d* is number
+                                  of measured variables
+           structure list(int, list(floats), list(floats)),
+                      number of non-hypertime dimensions, list of hypertime
+                      radii nad list of wavelengths
     output: X numpy array nxd, matrix of measures in hypertime
-    uses: loading_data(), np.empty(), np.c_[]
-    objective: to create X as a data in hypertime
+    uses: np.empty(), np.c_[]
+    objective: to create X as a data in hypertime, where the structure
+               of a space is derived from the varibale structure
     """
     dim = structure[0]
     radii = structure[1]
@@ -45,15 +70,9 @@ def create_X(data, structure, verbose):
         X[:, dim: dim + 2] = np.c_[r * np.cos(data[:, 0] * 2 * np.pi / Lambda),
                                    r * np.sin(data[:, 0] * 2 * np.pi / Lambda)]
         dim = dim + 2
-    # jeste si tu udelam vystup, ktery mi rekne, jaka je variabilita dat
-    if verbose:
-        print('struktura prostoru: ', structure)
-#        print('kovarincni matice dat ve vytvorenem prostoru:')
-#        print(np.cov(X, ddof=0, rowvar=False))
-#        print('kovarincni matice dat v rozumnem zobrazeni:')
-#        XC = zobrazeni_do_rozumnych_souradnic(X, structure)
-#        print(np.cov(XC, ddof=0, rowvar=False))
     return X
+
+# next there are functions used for testing only
 
 
 def save_numpy_array(variable, name, save_directory='/home/tom/projects/' +
@@ -64,7 +83,7 @@ def save_numpy_array(variable, name, save_directory='/home/tom/projects/' +
            save_directory string, path to file, default 'variables'
     output: None
     uses: np.save()
-    objective: to save numpy array to csv
+    objective: to save numpy array
     """
     if '.' in name:
         parts = name.rsplit('.')
@@ -80,7 +99,7 @@ def load_numpy_array(name, load_directory='/home/tom/projects/' +
            load_directory string, path to file, default 'variables'
     output: variable numpy array, loaded variable
     uses: np.load()
-    objective: to save numpy array
+    objective: to load numpy array
     """
     if '.' in name:
         parts = name.rsplit('.')
@@ -167,74 +186,3 @@ def create_zeros(structure):
                                    r * np.sin(data[:, 0] * 2 * np.pi / Lambda)]
         dim = dim + 2
     return X
-
-
-
-
-
-
-
-
-
-
-
-#
-#def loading_priklad_01(file_location='' +
-#                          '/home/tom/projects/atomousek/stroll_fremen_nd/' +
-#                          'priklad.txt', edge=0.05):
-#    """
-#    input: file_location string, defined as constant
-#           edge float, length of the edge of "cell"
-#    output: X numpy array nxd, matrix of normalized measures
-#            number_of_cubes list, number of cubes on x and y axis
-#    uses: pd.read_csv(), np.float64(), np.min(), np.max(), np.cos(), np.sin(),
-#          pd.iloc(), pd.values()
-#    objective: load file, normalize variables, return number of cubes
-#    """
-#    # read DataFrame
-#    df = pd.read_csv(file_location, sep=' ', header=None, index_col=None)
-#    # naming columns
-#    df.columns = ['unix_time', 'x', 'y']
-#    # variables for normalization
-#    hours = np.float64(df['unix_time'] % (60 * 60 * 24)) / (60 * 60)
-#    x_min = np.min(df['x'])
-#    x_max = np.max(df['x'])
-#    x_avg = (x_min + x_max) / 2
-#    y_min = np.min(df['y'])
-#    y_max = np.max(df['y'])
-#    y_avg = (y_min + y_max) / 2
-#    # number of predefined cubes in the measured space
-#    number_of_cubes = [(x_max - x_min) / edge, (y_max - y_min) / edge]
-#    # normalized variables
-#    df['cosinus_t'] = np.cos(2*np.pi * hours / 24)
-#    df['sinus_t'] = np.sin(2*np.pi * hours / 24)
-#    df['X_norm'] = 2 * (df['x'] - x_avg) / (x_max - x_min)
-#    df['Y_norm'] = 2 * (df['y'] - y_avg) / (y_max - y_min)
-#    return df.iloc[:, 3:7].values, np.int64(np.ceil(number_of_cubes))
-#
-#
-#def loading_priklad_natural(file_location='' +
-#                            '/home/tom/projects/atomousek/stroll_fremen_nd/' +
-#                            'priklad.txt', min_hours=-1, max_hours=25):
-#    """
-#    input: file_location string, defined as constant
-#           edge float, length of the edge of "cell"
-#    output: X numpy array nxd, matrix of normalized measures
-#            number_of_cubes list, number of cubes on x and y axis
-#    uses: pd.read_csv(), np.float64(), np.min(), np.max(), np.cos(), np.sin(),
-#          pd.iloc(), pd.values()
-#    objective: load file, naturalize variables, return number of cubes
-#    """
-#    # read DataFrame
-#    df = pd.read_csv(file_location, sep=' ', header=None, index_col=None)
-#    # naming columns
-#    df.columns = ['unix_time', 'x', 'y']
-#    # variables for naturalization
-#    df['hours'] = np.float64(df['unix_time'] % (60 * 60 * 24)) / (60 * 60)
-#    df = df.loc[(df['hours'] >= min_hours) & (df['hours'] < max_hours), :]
-#    # naturalized variables
-#    df['cosinus_t'] = (24 / (2*np.pi)) * np.cos(2*np.pi * df['hours'] / 24)
-#    df['sinus_t'] = (24 / (2*np.pi)) * np.sin(2*np.pi * df['hours'] / 24)
-#    df['X_norm'] = df['x']
-#    df['Y_norm'] = df['y']
-#    return df.iloc[:, 4:8].values

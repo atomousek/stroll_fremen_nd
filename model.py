@@ -66,7 +66,7 @@ def model_parameters(path, structure, C_old, U_old, k):
     uses: dio.create_X(), cl.k_means(), covariance_matrices()
     objective: to find model parameters
     """
-    X = dio.create_X(dio.loading_data(path), structure, verbose=True)
+    X = dio.create_X(dio.loading_data(path), structure)
     # d = np.shape(X)[1]
     # kdyz neni vstupem predesla znalost stredu, nemuzu na ni navazovat
     try:
@@ -314,7 +314,7 @@ def probabilities(data, C, COV, densities, structure, k, dense_calc):
           cl.partition_matrix()
     objective: to generate probabilities based on model above data
     """
-    X = dio.create_X(data, structure, verbose=False)
+    X = dio.create_X(data, structure)
     n, d = np.shape(X)
     # d = structure[0] + len(structure[1])
     gc.collect()
